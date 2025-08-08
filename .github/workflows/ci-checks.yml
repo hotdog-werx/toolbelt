@@ -19,9 +19,7 @@ jobs:
         uses: jdx/mise-action@v2
       - name: poe
         run: uv tool install poethepoet
-      - name: Add ~/.local/bin to PATH
-        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: dependencies
-        run: uv run poe uv-sync
+        run: uvx --from poethepoet poe uv-sync
       - name: coverage
-        run: uv run poe coverage
+        run: uvx --from poethepoet poe coverage
