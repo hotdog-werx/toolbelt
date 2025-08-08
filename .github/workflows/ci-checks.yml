@@ -1,0 +1,25 @@
+name: ci-checks
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: mise
+        uses: jdx/mise-action@v2
+      - name: poe
+        run: uv tool install poethepoet
+      - name: dependencies
+        run: poe uv-sync
+      - name: coverage
+        run: poe coverage
