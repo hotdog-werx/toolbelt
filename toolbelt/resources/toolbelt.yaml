@@ -1,0 +1,112 @@
+profiles:
+  python:
+    extensions: [".py"]
+    check_tools:
+      - name: "ruff-check"
+        command: "uvx"
+        args: ["ruff@latest", "check"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Fast Python linter"
+      - name: ruff-format-check
+        command: uvx
+        args: ["ruff@latest", "format", "--check"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Check Python formatting with Ruff"
+    format_tools:
+      - name: "ruff-format-80"
+        command: "uvx"
+        args: ["ruff@latest", "format", "--line-length=80"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Fast Python formatter"
+      - name: "add-trailing-comma"
+        command: "uvx"
+        args: ["add-trailing-comma@latest", "--exit-zero-even-if-changed"]
+        file_handling_mode: "per_file"
+        description: "Add trailing commas to Python code"
+      - name: "ruff-format-120"
+        command: "uvx"
+        args: ["ruff@latest", "format"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Fast Python formatter"
+      - name: "ruff-check-fix"
+        command: "uvx"
+        args: ["ruff@latest", "check", "--fix", "--fix-only"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Fast Python formatter"
+      - name: "ruff-format"
+        command: "uvx"
+        args: ["ruff@latest", "format"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Fast Python formatter"
+
+  complexity:
+    extensions: [".py"]
+    format_tools: []
+    check_tools:
+      - name: "complexity"
+        command: "uvx"
+        args: ["complexipy@latest", "-mx", "10"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "python complexity checker"
+
+  basedpyright:
+    extensions: [".py"]
+    format_tools: []
+    check_tools:
+      - name: "basedpyright"
+        command: "uvx"
+        args: ["basedpyright@latest"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "BasedPyright type checker"
+
+  prettier:
+    extensions: [".md"]
+    check_tools: []
+    format_tools:
+      - name: "prettier"
+        command: "pnpm"
+        args: ["dlx", "prettier@latest", "--write"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Prettier formatter"
+
+  coverage:
+    extensions: [".py"] # Special: coverage can work on any file type
+    format_tools: []
+    check_tools:
+      - name: "coverage"
+        description: "run tests with coverage"
+        command: "pytest"
+        args:
+          [
+            "-v",
+            "--tb=short",
+            "--cov=${PROJECT_SOURCE:toolbelt}",
+            "--cov-report=term-missing",
+            "--cov-report=html:.coverage-files/htmlcov",
+          ]
+        file_handling_mode: "batch"
+        default_target: "tests/unit/"
+
+  yaml:
+    extensions: [".yaml", ".yml"]
+    check_tools: []
+    format_tools:
+      - name: "yq-format"
+        command: "uvx"
+        args: ["yq@latest", "eval", "."]
+        output_to_file: true
+        description: "YAML formatter using yq"
+
+exclude_patterns:
+  - ".git/**"
+  - "**/__pycache__/**"
+  - ".venv/**"
