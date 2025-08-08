@@ -199,7 +199,10 @@ def test_should_ignore_file_cases(case: ShouldIgnoreFileCase, temp_dir: Path):
         spec = load_ignore_patterns(['.gitignore'], root_dir)
     else:
         spec = None
-    file_path = Path(case.file_to_check)
+    if case.desc == "outside_root":
+        file_path = Path(Path(temp_dir).anchor, *case.file_to_check.lstrip('/').split('/'))
+    else:
+        file_path = Path(case.file_to_check)
     result = should_ignore_file(file_path, spec, root_dir)
     assert result == case.expected
 
