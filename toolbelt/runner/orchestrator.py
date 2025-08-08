@@ -1,0 +1,368 @@
+from dataclasses import dataclass
+from pathlib import Path
+
+from toolbelt.config import ProfileConfig, ToolbeltConfig
+from toolbelt.config.models import ToolConfig
+from toolbelt.logging import get_logger
+from toolbelt.runner.file_discovery import get_target_files
+from toolbelt.runner.tool_execution import (
+    run_tool_in_discovery_mode,
+    run_tool_per_file_mode,
+    run_tool_with_file_output,
+)
+
+
+@dataclass
+class TargetFilesContext:
+    """Context for target files discovery.
+
+    This groups parameters needed when discovering files for per_file mode tools.
+    Used when we need to filter provided files to only existing, valid files
+    that match the profile's file patterns.
+
+    Args:
+        profile: The profile configuration containing file patterns and excludes
+        files: Optional list of specific files/paths provided by user
+        global_exclude_patterns: Global exclude patterns from config
+        verbose: Whether to enable verbose logging during file discovery
+        provided_files: String representation of provided files for logging
+        log_type: Type of log message to emit if no files found
+    """
+
+    profile: ProfileConfig
+    files: list[Path] | None
+    global_exclude_patterns: list[str]
+    verbose: bool
+    provided_files: list[str] | None = None
+    log_type: str = 'no_files'
+
+
+@dataclass
+class ToolBranchContext:
+    """Context for tool execution within a specific profile branch.
+
+    This groups all parameters needed to execute a single tool, encapsulating
+    the decision logic about file handling modes and target resolution.
+
+    The "branch" refers to the execution path taken based on:
+    - Tool's file_handling_mode ('batch' vs 'per_file')
+    - Whether tool outputs to file
+    - Whether specific files were provided vs discovery mode
+
+    Args:
+        tool: The specific tool configuration to execute
+        profile: The profile containing file patterns and settings
+        use_file_mode: True if specific files were provided, False for discovery
+        target_files: Resolved list of files to process (None for discovery mode)
+        global_exclude_patterns: Global exclude patterns from config
+        verbose: Whether to enable verbose logging during execution
+    """
+
+    tool: ToolConfig
+    profile: ProfileConfig
+    use_file_mode: bool
+    target_files: list[Path] | None
+    global_exclude_patterns: list[str]
+    verbose: bool
+
+
+logger = get_logger(__name__)
+
+
+def _get_target_files_or_log(ctx: TargetFilesContext) -> list[Path] | None:
+    """Get target files for per_file mode tools, with logging if none found.
+
+    This is used when specific files are provided but we need to filter them
+    to only existing files that match the profile's patterns.
+
+    Args:
+        ctx: Context containing profile, files, and logging parameters
+
+    Returns:
+        List of valid target files, or None if no files found
+    """
+    target_files = get_target_files(
+        ctx.profile,
+        ctx.files,
+        ctx.global_exclude_patterns,
+        verbose=ctx.verbose,
+    )
+    if not target_files:
+        logger.warning(
+            ctx.log_type,
+            profile=ctx.profile,
+            provided_files=ctx.provided_files,
+        )
+        return None
+    return target_files
+
+
+def _run_tool_branch(
+    ctx: ToolBranchContext,
+    variables: dict[str, str] | None = None,
+) -> int:
+    """Run a tool using the appropriate execution mode based on tool configuration.
+
+    This implements the decision tree for tool execution:
+
+    1. If tool.output_to_file: Use file output mode (processes files individually)
+    2. If tool.file_handling_mode == 'per_file': Find files, pass all to tool at once
+    3. If tool.file_handling_mode == 'batch': Let tool discover files itself
+
+    The "branch" refers to which execution path is taken based on tool configuration.
+
+    Args:
+        ctx: Context containing tool, profile, and target information
+        variables: Optional environment variables for template substitution
+
+    Returns:
+        Exit code from tool execution (0 for success)
+    """
+    tool = ctx.tool
+
+    # Decision 1: Check if tool outputs to file (requires special handling)
+    if tool.output_to_file:
+        # For output_to_file tools, we need to find files and process them individually
+        if ctx.use_file_mode and ctx.target_files:
+            files_to_process = get_target_files(
+                ctx.profile,
+                ctx.target_files,
+                ctx.global_exclude_patterns,
+                verbose=ctx.verbose,
+            )
+        else:
+            files_to_process = get_target_files(
+                ctx.profile,
+                None,
+                ctx.global_exclude_patterns,
+                verbose=ctx.verbose,
+            )
+
+        if not files_to_process:
+            logger.warning(
+                'no_files_found',
+                tool=tool.name,
+                profile=ctx.profile,
+                advisory='No files found to process.',
+            )
+            return 0
+
+        return run_tool_with_file_output(tool, files_to_process, variables)
+
+    # Decision 2: Check file handling mode
+    if tool.file_handling_mode == 'per_file':
+        # We find files and pass them to the tool all at once
+        if ctx.use_file_mode and ctx.target_files:
+            files_to_process = get_target_files(
+                ctx.profile,
+                ctx.target_files,
+                ctx.global_exclude_patterns,
+                verbose=ctx.verbose,
+            )
+        else:
+            files_to_process = get_target_files(
+                ctx.profile,
+                None,
+                ctx.global_exclude_patterns,
+                verbose=ctx.verbose,
+            )
+
+        if not files_to_process:
+            logger.warning(
+                'no_files_found',
+                tool=tool.name,
+                profile=ctx.profile,
+                advisory='No files found to process.',
+            )
+            return 0
+
+        return run_tool_per_file_mode(
+            tool,
+            files=files_to_process,
+            variables=variables,
+        )
+
+    if tool.file_handling_mode == 'batch':
+        # Tool handles its own file discovery, we pass provided files/dirs as targets
+        if ctx.use_file_mode and ctx.target_files:
+            targets = [str(f) for f in ctx.target_files]
+        else:
+            targets = [tool.default_target] if tool.default_target else ['.']
+
+        return run_tool_in_discovery_mode(
+            tool,
+            targets=targets,
+            variables=variables,
+        )
+
+    logger.error(
+        'invalid_file_handling_mode',
+        tool=tool.name,
+        file_handling_mode=tool.file_handling_mode,
+        supported_modes=['batch', 'per_file'],
+    )
+    return 1
+
+
+def _run_tools_for_profile(
+    config: ToolbeltConfig,
+    profile_name: str,
+    *,
+    files: list[Path] | None,
+    verbose: bool,
+    tool_type: str,
+) -> int:
+    """Generic runner for check/format tools with complex file handling logic.
+
+    This function implements the core orchestration logic with these steps:
+
+    1. **Profile Setup**: Load profile and its tools
+    2. **File Mode Detection**: Determine if specific files provided vs discovery mode
+    3. **Target Resolution**: Handle different scenarios based on tool types:
+       - Batch tools: Pass provided files/paths directly (let tool handle discovery)
+       - Per-file tools: Filter provided files to existing, valid files
+       - Discovery mode: Let each tool discover files independently
+    4. **Tool Execution**: Run each tool with appropriate context
+
+    Key Logic:
+    - `use_file_mode = True` when specific files are provided
+    - For batch tools: Pass files as-is (even non-existent paths)
+    - For per_file tools: Filter to existing files matching profile patterns
+    - Mixed tool types: Handle each appropriately
+
+    Args:
+        config: Toolbelt configuration with profiles and global settings
+        profile_name: Name of profile to run
+        files: Optional specific files/paths to process
+        verbose: Enable detailed logging
+        tool_type: 'check' or 'format' - determines which tools to run
+
+    Returns:
+        Exit code: 0 for success, non-zero for any tool failure
+    """
+    profile = config.get_profile(profile_name)
+    if not profile:
+        logger.error('invalid_profile', profile=profile)
+        return 1
+
+    tools = getattr(profile, f'{tool_type}_tools', None)
+    if not tools:
+        warn_msg = f'no_{tool_type}ers'
+        logger.warning(warn_msg, profile=profile)
+        return 0
+
+    use_file_mode = files is not None and len(files) > 0
+    if files is not None and len(files) > 0:
+        # COMPLEX LOGIC: Handle mixed tool types when specific files are provided
+        #
+        # Batch tools: Can handle non-existent paths (e.g., "mypy src/" where src/
+        #              doesn't exist yet). Pass paths directly for tool to handle.
+        #
+        # Per-file tools: Need actual files (e.g., "black file1.py file2.py").
+        #                Must filter to existing files matching profile patterns.
+        #
+        # When profile has mixed tools, we need to handle both scenarios.
+
+        # For batch tools, pass provided files directly without filtering
+        # For per_file tools, filter to existing files
+        has_batch_tools = any(tool.file_handling_mode == 'batch' for tool in tools)
+
+        if has_batch_tools:
+            # Pass provided files/paths directly - let the tool handle them
+            target_files = files
+            logger.info(
+                'checking' if tool_type == 'check' else 'formatting',
+                profile_name=profile.name,
+                provided_paths=[str(f) for f in files],
+            )
+        else:
+            # Per-file mode - filter to existing files
+            tf_ctx = TargetFilesContext(
+                profile=profile,
+                files=files,
+                global_exclude_patterns=config.global_exclude_patterns,
+                verbose=verbose,
+                provided_files=[str(f) for f in files],
+                log_type='no_files',
+            )
+            target_files = _get_target_files_or_log(tf_ctx)
+            if not target_files:
+                return 0
+            logger.info(
+                'checking' if tool_type == 'check' else 'formatting',
+                profile=profile,
+                file_count=len(target_files),
+            )
+    else:
+        # Discovery mode: No specific files provided
+        target_files = None
+        logger.info('discovering', profile_name=profile.name)
+
+    exit_code = 0
+    for tool in tools:
+        branch_ctx = ToolBranchContext(
+            tool=tool,
+            profile=profile,
+            use_file_mode=use_file_mode,
+            target_files=target_files,
+            global_exclude_patterns=config.global_exclude_patterns,
+            verbose=verbose,
+        )
+        result = _run_tool_branch(branch_ctx, config.variables)
+        if result != 0:
+            exit_code = result
+    return exit_code
+
+
+def run_check(
+    config: ToolbeltConfig,
+    profile: str,
+    *,
+    files: list[Path] | None = None,
+    verbose: bool = False,
+) -> int:
+    """Run check tools for the specified profile.
+
+    Args:
+        config: The ToolbeltConfig instance containing profiles and tools.
+        profile: The profile name to run.
+        files: Optional list of files to check. If None, uses profile extensions.
+        verbose: Whether to log detailed output.
+
+    Returns:
+        Exit code indicating success (0) or failure (non-zero).
+    """
+    return _run_tools_for_profile(
+        config,
+        profile,
+        files=files,
+        verbose=verbose,
+        tool_type='check',
+    )
+
+
+def run_format(
+    config: ToolbeltConfig,
+    profile: str,
+    *,
+    files: list[Path] | None = None,
+    verbose: bool = False,
+) -> int:
+    """Run format tools for the specified profile.
+
+    Args:
+        config: The ToolbeltConfig instance containing profiles and tools.
+        profile: The profile name to run.
+        files: Optional list of files to format. If None, uses profile extensions.
+        verbose: Whether to log detailed output.
+
+    Returns:
+        Exit code indicating success (0) or failure (non-zero).
+    """
+    return _run_tools_for_profile(
+        config,
+        profile,
+        files=files,
+        verbose=verbose,
+        tool_type='format',
+    )
