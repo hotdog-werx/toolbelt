@@ -2,4 +2,3 @@
 
 uv-sync = "uv sync --all-groups"
 prettier = "pnpm dlx prettier --write ."
-coverage = "pytest -v --tb=short --cov=toolbelt --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov tests"
