@@ -1,0 +1,12 @@
+.venv
+build/
+dist/
+__pycache__/
+*.egg-info/
+*.pyc
+.coverage
+.coverage.*
+.coverage-files/
+test_ignored.py
+htmlcov/
+book/

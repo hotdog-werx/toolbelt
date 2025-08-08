@@ -1,0 +1,4 @@
+[tool.poe.tasks]
+
+uv-sync = "uv sync --all-groups"
+prettier = "pnpm dlx prettier --write ."
