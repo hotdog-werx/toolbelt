@@ -1,0 +1,22 @@
+[run]
+source = toolbelt
+omit =
+    */tests/*
+    */test_*
+    */.venv/*
+    */tmp/*
+    */__pycache__/*
+    *.egg-info/*
+    /tmp/pytest-*/*
+
+[html]
+directory = .coverage-files/htmlcov
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == '__main__'
+show_missing = true

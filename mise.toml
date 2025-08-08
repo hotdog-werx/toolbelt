@@ -1,0 +1,13 @@
+[settings]
+experimental = true
+python.uv_venv_auto = true
+
+[env]
+COVERAGE_RCFILE="configs/.coveragerc"
+
+[tools]
+uv = "0.7.20"
+taplo = "0.10.0"
+node = "24.4.1"
+pnpm = "10.13.1"
+mdbook = "0.4.52"
