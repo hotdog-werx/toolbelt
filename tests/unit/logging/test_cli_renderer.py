@@ -53,18 +53,18 @@ class RendererCase:
             desc='info',
         ),
         RendererCase(
-            method_name='warning_log',
+            method_name='warning',
             event_dict={'event': 'warn!'},
             expected_fragments=['[WARNING]', 'warn!'],
             expected_style='yellow',
-            desc='warning',
+            desc='warning_log',
         ),
         RendererCase(
-            method_name='error_log',
+            method_name='error',
             event_dict={'event': 'fail!'},
             expected_fragments=['[ERROR]', 'fail!'],
             expected_style='red',
-            desc='error',
+            desc='error_log',
         ),
         RendererCase(
             method_name='debug',
