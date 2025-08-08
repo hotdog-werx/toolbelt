@@ -71,7 +71,7 @@ class RendererCase:
             event_dict={'event': 'debugging'},
             expected_fragments=['[DEBUG]', 'debugging'],
             expected_style='magenta',
-            desc='debug',
+            desc='debug_log',
         ),
         RendererCase(
             method_name='critical',
