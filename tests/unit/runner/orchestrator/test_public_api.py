@@ -6,6 +6,7 @@ from typing import TypedDict
 from unittest.mock import MagicMock
 
 import pytest
+from pytest_mock import MockerFixture
 
 import toolbelt.runner.orchestrator as orchestrator_mod
 from toolbelt.config import ToolbeltConfig
@@ -18,7 +19,7 @@ class PublicApiMocks(TypedDict):
 
 
 @pytest.fixture
-def public_api_mocks(mocker) -> PublicApiMocks:
+def public_api_mocks(mocker: MockerFixture) -> PublicApiMocks:
     return PublicApiMocks(
         run_tools_for_profile=mocker.patch.object(
             orchestrator_mod,

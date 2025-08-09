@@ -20,7 +20,7 @@ class CommandEnvMocks(TypedDict):
 
 
 @pytest.fixture
-def mock_command_env(mocker) -> CommandEnvMocks:
+def mock_command_env(mocker: MockerFixture) -> CommandEnvMocks:
     expand = mocker.patch.object(tool_exec_mod, 'expand_globs_in_args')
     run = mocker.patch.object(tool_exec_mod.subprocess, 'run')
     stdout_write = mocker.patch.object(tool_exec_mod.sys.stdout, 'write')

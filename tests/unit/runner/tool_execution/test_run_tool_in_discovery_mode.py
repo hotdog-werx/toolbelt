@@ -87,7 +87,7 @@ class DiscoveryModeCase:
     ids=lambda c: c.desc,
 )
 def test_run_tool_in_discovery_mode_parametrized(
-    mocker,
+    mocker: MockerFixture,
     case: DiscoveryModeCase,
 ):
     ret_val = case.expected_result

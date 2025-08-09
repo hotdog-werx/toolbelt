@@ -144,7 +144,7 @@ class IgnorePatternCase:
 def test_load_ignore_patterns_parametrized(
     case: IgnorePatternCase,
     temp_dir: Path,
-    mocker,
+    mocker: MockerFixture,
 ):
     """Parametrized test for loading ignore patterns from various files and error conditions."""
     root_dir = Path(temp_dir)

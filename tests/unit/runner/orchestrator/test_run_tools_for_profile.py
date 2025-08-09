@@ -4,6 +4,7 @@ from typing import TypedDict
 from unittest.mock import MagicMock
 
 import pytest
+from pytest_mock import MockerFixture
 
 import toolbelt.runner.orchestrator as orchestrator_mod
 from toolbelt.config import ToolbeltConfig
@@ -19,7 +20,7 @@ class ToolsProfileMocks(TypedDict):
 
 
 @pytest.fixture
-def tools_profile_mocks(mocker) -> ToolsProfileMocks:
+def tools_profile_mocks(mocker: MockerFixture) -> ToolsProfileMocks:
     return ToolsProfileMocks(
         get_target_files_or_log=mocker.patch.object(
             orchestrator_mod,

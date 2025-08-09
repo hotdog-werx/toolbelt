@@ -297,7 +297,7 @@ def execute_command(cmd: list[str], tool: ToolConfig) -> int:
             success=result.returncode == 0,
         )
         sys.stdout.write('\n')
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - Broad exception handling for all errors
         _log_exception(
             e,
             tool=tool,

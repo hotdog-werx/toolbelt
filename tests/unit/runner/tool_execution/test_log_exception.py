@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 
 from toolbelt.config.models import ToolConfig
 from toolbelt.runner import tool_execution as tool_exec_mod
-from toolbelt.runner.tool_execution import execute_command
+from toolbelt.runner.tool_execution import _log_exception, execute_command
 
 
 class ToolExecMocks(TypedDict):
@@ -100,8 +100,6 @@ def test_log_exception_variants(
 
 def test_log_exception_with_custom_command_and_file(mocker: MockerFixture):
     """Test _log_exception with custom command and file parameters."""
-    from toolbelt.runner.tool_execution import _log_exception
-
     tool = ToolConfig(
         name='test-tool',
         command='default-cmd',

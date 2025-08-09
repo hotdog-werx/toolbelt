@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
+from pytest_mock import MockerFixture
 
 from toolbelt.config.models import ToolConfig
 from toolbelt.runner.tool_execution import _build_log_context
@@ -88,10 +89,11 @@ class LogContextCase:
     ],
     ids=lambda c: c.description,
 )
-def test_build_log_context_parametrized(mocker, tcase: LogContextCase):
-    """Parametrized test for _build_log_context helper function.
-    Covers: {tcase.description}
-    """
+def test_build_log_context_parametrized(
+    mocker: MockerFixture,
+    tcase: LogContextCase,
+):
+    """Parametrized test for _build_log_context helper function."""
     if tcase.cwd is not None:
         mocker.patch(
             'toolbelt.runner.tool_execution.Path.cwd',

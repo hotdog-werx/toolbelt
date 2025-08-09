@@ -13,7 +13,7 @@ def test_load_config_merges_multiple_sources(tmp_path: Path):
           python:
             extensions: [".py"]
             check_tools: []
-            format_tools: []                    
+            format_tools: []
         global_exclude_patterns: ["*.pyc"]
     """),
     )

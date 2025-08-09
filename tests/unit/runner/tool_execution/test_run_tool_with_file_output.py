@@ -169,7 +169,10 @@ class FileOutputCase:
     ],
     ids=lambda c: c.desc,
 )
-def test_run_tool_with_file_output_cases(mocker: MockerFixture, case):
+def test_run_tool_with_file_output_cases(
+    mocker: MockerFixture,
+    case: FileOutputCase,
+):
     """Test run_tool_with_file_output for multiple files, error, and empty output cases."""
     mock_subprocess = mocker.patch.object(
         tool_exec_mod.subprocess,
@@ -198,7 +201,7 @@ def test_run_tool_with_file_output_file_not_found_error(mocker: MockerFixture):
     )
     test_file = Path('test.txt')
     files = [test_file]
-    mock_subprocess = mocker.patch.object(
+    mocker.patch.object(
         tool_exec_mod.subprocess,
         'run',
         side_effect=FileNotFoundError('Command not found'),
@@ -255,7 +258,7 @@ def test_run_tool_with_file_output_no_variables(mocker: MockerFixture):
     mock_result.returncode = 0
     mock_result.stdout = 'output\n'
     mock_result.stderr = ''
-    mock_subprocess = mocker.patch.object(
+    mocker.patch.object(
         tool_exec_mod.subprocess,
         'run',
         return_value=mock_result,

@@ -1,9 +1,11 @@
 """Tests for cli_renderer function in toolbelt.logging."""
 
 from dataclasses import dataclass
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
+from pytest_mock import MockerFixture
 from rich.syntax import Syntax
 
 from toolbelt import logging as logging_mod
@@ -11,9 +13,9 @@ from toolbelt.logging import Logger, cli_renderer
 
 
 @pytest.fixture(autouse=True)
-def patch_console(mocker):
+def patch_console(mocker: MockerFixture) -> dict[str, Any]:
     """Patch the global Console.print used in cli_renderer to capture output using mocker."""
-    printed = []
+    printed: list[Any] = []
     mocker.patch.object(
         logging_mod.console,
         'print',
@@ -90,7 +92,10 @@ class RendererCase:
     ],
     ids=lambda c: c.desc,
 )
-def test_cli_renderer_basic_styles(patch_console, tcase: RendererCase):
+def test_cli_renderer_basic_styles(
+    patch_console: dict[str, Any],
+    tcase: RendererCase,
+) -> None:
     """Test that cli_renderer prints correct style and fragments for each log level."""
     logger = MagicMock(spec=Logger)
     result = cli_renderer(logger, tcase.method_name, tcase.event_dict)
@@ -102,12 +107,13 @@ def test_cli_renderer_basic_styles(patch_console, tcase: RendererCase):
         if all(frag in text for frag in tcase.expected_fragments) and tcase.expected_style in text:
             found = True
             break
-    assert found, (
-        f"Expected fragments {tcase.expected_fragments} and style '{tcase.expected_style}' in output: {patch_console['printed']}"
-    )
+    frag = ' '.join(tcase.expected_fragments)
+    style = tcase.expected_style
+    patched = patch_console['printed']
+    assert found, f"Expected fragments '{frag}' with style '{style}' in output: {patched}"
 
 
-def test_cli_renderer_context_yaml(patch_console):
+def test_cli_renderer_context_yaml(patch_console: dict[str, Any]) -> None:
     """Test that cli_renderer prints YAML context when present."""
     logger = MagicMock(spec=Logger)
     event_dict = {'event': 'info', 'foo': 'bar', 'baz': 123}
@@ -120,7 +126,9 @@ def test_cli_renderer_context_yaml(patch_console):
     assert found_yaml, f'Expected a Syntax (YAML) block in output: {patch_console["printed"]}'
 
 
-def test_cli_renderer_executing_special_case(patch_console):
+def test_cli_renderer_executing_special_case(
+    patch_console: dict[str, Any],
+) -> None:
     """Test that cli_renderer handles the 'executing' event specially."""
     logger = MagicMock(spec=Logger)
     event_dict = {'event': 'executing', 'command': 'ls -l', 'tool': 'ls'}

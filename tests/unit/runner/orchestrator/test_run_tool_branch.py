@@ -6,6 +6,7 @@ from typing import TypedDict
 from unittest.mock import MagicMock
 
 import pytest
+from pytest_mock import MockerFixture
 
 import toolbelt.runner.orchestrator as orchestrator_mod
 from toolbelt.config.models import ProfileConfig, ToolConfig
@@ -22,7 +23,7 @@ class ToolBranchMocks(TypedDict):
 
 
 @pytest.fixture
-def tool_branch_mocks(mocker) -> ToolBranchMocks:
+def tool_branch_mocks(mocker: MockerFixture) -> ToolBranchMocks:
     return ToolBranchMocks(
         get_target_files=mocker.patch.object(
             orchestrator_mod,
@@ -59,7 +60,10 @@ class ToolBranchCase:
     expected_result: int = 0
 
 
-def create_base_context(tool: ToolConfig, **overrides) -> ToolBranchContext:
+def create_base_context(
+    tool: ToolConfig,
+    **overrides: dict[str, str],
+) -> ToolBranchContext:
     """Create a base ToolBranchContext with optional overrides."""
     defaults = {
         'profile': ProfileConfig(
@@ -234,7 +238,7 @@ def test_run_tool_branch(
 
     # Handle invalid file handling mode test by patching the tool
     if case.desc == 'invalid_file_handling_mode':
-        context.tool.file_handling_mode = 'invalid'  # type: ignore
+        context.tool.file_handling_mode = 'invalid'  # type: ignore - testing invalid value
 
     # Set up get_target_files mock if specified
     if case.get_target_files_return is not None:

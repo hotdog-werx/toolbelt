@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
-from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
 import toolbelt.runner.file_discovery as fd
@@ -43,7 +42,8 @@ def sample_profile_config(tmp_path: Path):
 def make_files(
     tmp_path: Path,
     files: list[str],
-    as_dir=False,
+    *,
+    as_dir: bool = False,
 ) -> tuple[Path | None, list[Path]]:
     """Creates dummy files in a directory."""
     paths = []
@@ -121,7 +121,7 @@ def test_get_target_files(
 ):
     # Use pytest monkeypatch to safely change working directory
     # This will be automatically restored after the test
-    monkeypatch = MonkeyPatch()
+    monkeypatch = pytest.MonkeyPatch()
     monkeypatch.chdir(tmp_path)
     # Setup profile config
     extensions = case.extensions if case.extensions is not None else ['.py']
@@ -214,12 +214,10 @@ def test_find_files_by_extensions_parametrized(
     case: FindFilesByExtCase,
     capsys: pytest.CaptureFixture,
 ):
-    from toolbelt.runner.file_discovery import find_files_by_extensions
-
     # Create files
     for fname in case.create:
         (tmp_path / fname).write_text('dummy')
-    monkeypatch = MonkeyPatch()
+    monkeypatch = pytest.MonkeyPatch()
     monkeypatch.chdir(tmp_path)
     result = find_files_by_extensions(
         extensions=case.extensions,
@@ -240,9 +238,9 @@ def test_find_files_by_extensions_parametrized(
         assert 'Found files after applying ignore rules' in out
 
 
-def test_find_files_by_extensions_ignore(tmp_path, mocker: MockerFixture):
+def test_find_files_by_extensions_ignore(tmp_path: Path, mocker: MockerFixture):
     (tmp_path / 'ignored.py').write_text('dummy')
-    monkeypatch = MonkeyPatch()
+    monkeypatch = pytest.MonkeyPatch()
     monkeypatch.chdir(tmp_path)
 
     # Patch the ignore manager's should_ignore method to return True for 'ignored.py'

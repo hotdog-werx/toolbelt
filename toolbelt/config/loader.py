@@ -4,7 +4,7 @@ import importlib.util
 import tomllib  # Python 3.11+ only
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Protocol
+from typing import Any
 
 import yaml
 
@@ -16,10 +16,6 @@ from .models import ToolbeltConfig
 from .parser import parse_toolbelt_config
 
 log = get_logger(__name__)
-
-
-class HasConfig(Protocol):
-    config: Any
 
 
 def load_yaml_config(config_path: Path) -> ToolbeltConfig:

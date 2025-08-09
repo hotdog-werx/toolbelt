@@ -19,7 +19,7 @@ class PerFileModeMocks(TypedDict):
 
 
 @pytest.fixture
-def per_file_mode_mocks(mocker) -> PerFileModeMocks:
+def per_file_mode_mocks(mocker: MockerFixture) -> PerFileModeMocks:
     return PerFileModeMocks(
         execute_command=mocker.patch.object(
             tool_exec_mod,
@@ -127,7 +127,7 @@ def test_run_tool_per_file_mode_parametrized(
 
 
 @pytest.mark.parametrize(
-    'max_display,expected_file_count',
+    'tcase',
     [
         (3, 10),
         (0, 3),
@@ -135,12 +135,11 @@ def test_run_tool_per_file_mode_parametrized(
     ids=['limit_3', 'show_all'],
 )
 def test_run_tool_per_file_mode_display_limit(
-    mocker: MockerFixture,
-    max_display: int,
-    expected_file_count: int,
+    tcase: tuple[int, int],
     per_file_mode_mocks: PerFileModeMocks,
 ):
     """Parametrized test for file display limit in logging."""
+    max_display, expected_file_count = tcase
     tool = ToolConfig(
         name='test-tool',
         command='tool',
