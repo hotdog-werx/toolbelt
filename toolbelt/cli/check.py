@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+
 from toolbelt.config.models import ToolbeltConfig
 from toolbelt.runner.orchestrator import run_check
 

@@ -1,10 +1,10 @@
+from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from pytest_mock import MockerFixture
-from dataclasses import dataclass
-
 import pytest
+from pytest_mock import MockerFixture
+
 import toolbelt.runner.tool_execution as tool_exec_mod
 from toolbelt.config.models import ToolConfig
 from toolbelt.runner.tool_execution import run_tool_with_file_output

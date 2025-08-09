@@ -1,4 +1,5 @@
 import argparse
+
 from toolbelt.config.models import ToolbeltConfig
 from toolbelt.runner.display import list_tools
 
@@ -26,7 +27,10 @@ def add_list_subparser(
     return list_parser
 
 
-def handle_list_command(config: ToolbeltConfig, args: argparse.Namespace) -> int:
+def handle_list_command(
+    config: ToolbeltConfig,
+    args: argparse.Namespace,
+) -> int:
     """Handle the 'list' command.
 
     Args:

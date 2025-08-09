@@ -8,6 +8,7 @@ from rich.console import Console
 from toolbelt import __version__
 from toolbelt.config.loader import find_config_sources, load_config
 from toolbelt.logging import configure_logging, get_logger
+
 from .check import add_check_subparser, handle_check_command
 from .format import add_format_subparser, handle_format_command
 from .list import add_list_subparser, handle_list_command
@@ -23,9 +24,18 @@ def create_parser() -> argparse.ArgumentParser:
     )
     arg = parser.add_argument
     arg('--version', action='version', version=__version__)
-    arg('--config', '-c', type=Path, help='Path to configuration file (toolbelt.yaml or toolbelt.py)')
+    arg(
+        '--config',
+        '-c',
+        type=Path,
+        help='Path to configuration file (toolbelt.yaml or toolbelt.py)',
+    )
     arg('--verbose', '-v', action='store_true', help='Enable verbose output')
-    arg('--sources', action='store_true', help='Show configuration sources being loaded')
+    arg(
+        '--sources',
+        action='store_true',
+        help='Show configuration sources being loaded',
+    )
     subparsers = parser.add_subparsers(
         dest='command',
         help='Available commands',

@@ -1,17 +1,11 @@
 """Main test configuration and fixtures."""
 
-import logging
 import tempfile
 from collections.abc import Generator
 from pathlib import Path
 from textwrap import dedent
-from unittest.mock import MagicMock
 
 import pytest
-from pytest_mock import MockerFixture
-from structlog.types import FilteringBoundLogger
-
-from toolbelt.config import ProfileConfig, ToolbeltConfig, ToolConfig
 
 
 @pytest.fixture

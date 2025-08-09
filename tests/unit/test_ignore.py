@@ -60,7 +60,10 @@ class IgnoreTestCase:
     ],
     ids=lambda c: c.desc,
 )
-def test_should_ignore_file_patterns(tcase: IgnoreTestCase, temp_dir: Path) -> None:
+def test_should_ignore_file_patterns(
+    tcase: IgnoreTestCase,
+    temp_dir: Path,
+) -> None:
     """Parametrized: Test should_ignore_file with various patterns."""
     root_dir = Path(temp_dir)
     ignore_file = root_dir / '.gitignore'
@@ -84,75 +87,91 @@ class IgnorePatternCase:
     patch_open: str | None
     expected_count: int
 
+
 @pytest.mark.parametrize(
-    "case",
+    'case',
     [
         IgnorePatternCase(
-            desc="empty_list",
+            desc='empty_list',
             ignore_files=[],
             file_contents={},
             patch_open=None,
             expected_count=0,
         ),
         IgnorePatternCase(
-            desc="nonexistent_file",
-            ignore_files=[".nonexistent"],
+            desc='nonexistent_file',
+            ignore_files=['.nonexistent'],
             file_contents={},
             patch_open=None,
             expected_count=0,
         ),
         IgnorePatternCase(
-            desc="single_file",
-            ignore_files=[".gitignore"],
-            file_contents={".gitignore": "*.pyc\n__pycache__/\n# This is a comment\n\n"},
+            desc='single_file',
+            ignore_files=['.gitignore'],
+            file_contents={
+                '.gitignore': '*.pyc\n__pycache__/\n# This is a comment\n\n',
+            },
             patch_open=None,
             expected_count=2,
         ),
         IgnorePatternCase(
-            desc="multiple_files",
-            ignore_files=[".gitignore", ".prettierignore"],
+            desc='multiple_files',
+            ignore_files=['.gitignore', '.prettierignore'],
             file_contents={
-                ".gitignore": "*.pyc\n__pycache__/\n",
-                ".prettierignore": "dist/\nnode_modules/\n",
+                '.gitignore': '*.pyc\n__pycache__/\n',
+                '.prettierignore': 'dist/\nnode_modules/\n',
             },
             patch_open=None,
             expected_count=4,
         ),
         IgnorePatternCase(
-            desc="io_error",
-            ignore_files=[".gitignore"],
-            file_contents={".gitignore": "*.pyc\n"},
-            patch_open="OSError",
+            desc='io_error',
+            ignore_files=['.gitignore'],
+            file_contents={'.gitignore': '*.pyc\n'},
+            patch_open='OSError',
             expected_count=0,
         ),
         IgnorePatternCase(
-            desc="unicode_error",
-            ignore_files=[".gitignore"],
-            file_contents={".gitignore": "*.pyc\n"},
-            patch_open="UnicodeDecodeError",
+            desc='unicode_error',
+            ignore_files=['.gitignore'],
+            file_contents={'.gitignore': '*.pyc\n'},
+            patch_open='UnicodeDecodeError',
             expected_count=0,
         ),
     ],
     ids=lambda c: c.desc,
 )
-def test_load_ignore_patterns_parametrized(case: IgnorePatternCase, temp_dir: Path, mocker):
+def test_load_ignore_patterns_parametrized(
+    case: IgnorePatternCase,
+    temp_dir: Path,
+    mocker,
+):
     """Parametrized test for loading ignore patterns from various files and error conditions."""
     root_dir = Path(temp_dir)
     for fname, content in case.file_contents.items():
         (root_dir / fname).write_text(content)
 
-    if case.patch_open == "OSError":
-        mocker.patch.object(Path, "open", side_effect=OSError("Permission denied"))
-    elif case.patch_open == "UnicodeDecodeError":
+    if case.patch_open == 'OSError':
         mocker.patch.object(
             Path,
-            "open",
-            side_effect=UnicodeDecodeError("utf-8", b"\x80", 0, 1, "invalid start byte"),
+            'open',
+            side_effect=OSError('Permission denied'),
+        )
+    elif case.patch_open == 'UnicodeDecodeError':
+        mocker.patch.object(
+            Path,
+            'open',
+            side_effect=UnicodeDecodeError(
+                'utf-8',
+                b'\x80',
+                0,
+                1,
+                'invalid start byte',
+            ),
         )
 
     spec = load_ignore_patterns(case.ignore_files, root_dir)
     assert len(spec.patterns) == case.expected_count
-
 
 
 @dataclass
@@ -161,32 +180,33 @@ class ShouldIgnoreFileCase:
     ignore_content: str
     file_to_check: str
     expected: bool
-    root_dir_offset: str = ""
+    root_dir_offset: str = ''
     spec_is_none: bool = False
 
+
 @pytest.mark.parametrize(
-    "case",
+    'case',
     [
         ShouldIgnoreFileCase(
-            desc="none_spec",
-            ignore_content="",
-            file_to_check="test.py",
+            desc='none_spec',
+            ignore_content='',
+            file_to_check='test.py',
             expected=False,
             spec_is_none=True,
         ),
         ShouldIgnoreFileCase(
-            desc="absolute_path",
-            ignore_content="*.pyc\n",
-            file_to_check="test.pyc",
+            desc='absolute_path',
+            ignore_content='*.pyc\n',
+            file_to_check='test.pyc',
             expected=True,
-            root_dir_offset="",
+            root_dir_offset='',
         ),
         ShouldIgnoreFileCase(
-            desc="outside_root",
-            ignore_content="*.pyc\n",
-            file_to_check="/outside/test.pyc",
+            desc='outside_root',
+            ignore_content='*.pyc\n',
+            file_to_check='/outside/test.pyc',
             expected=False,
-            root_dir_offset="",
+            root_dir_offset='',
         ),
     ],
     ids=lambda c: c.desc,
@@ -199,13 +219,15 @@ def test_should_ignore_file_cases(case: ShouldIgnoreFileCase, temp_dir: Path):
         spec = load_ignore_patterns(['.gitignore'], root_dir)
     else:
         spec = None
-    if case.desc == "outside_root":
-        file_path = Path(Path(temp_dir).anchor, *case.file_to_check.lstrip('/').split('/'))
+    if case.desc == 'outside_root':
+        file_path = Path(
+            Path(temp_dir).anchor,
+            *case.file_to_check.lstrip('/').split('/'),
+        )
     else:
         file_path = Path(case.file_to_check)
     result = should_ignore_file(file_path, spec, root_dir)
     assert result == case.expected
-
 
 
 def test_filter_ignored_files(temp_dir: Path) -> None:
@@ -228,6 +250,7 @@ def test_filter_ignored_files(temp_dir: Path) -> None:
     expected = [Path('test.py'), Path('src/main.py')]
 
     assert filtered == expected, f'Expected {expected}, got {filtered}'
+
 
 def test_should_ignore_convenience_function(temp_dir: Path) -> None:
     """Test should_ignore convenience function."""
@@ -253,7 +276,6 @@ def test_ignore_manager_filter_files_method(temp_dir: Path) -> None:
     filtered = manager.filter_files(files)
 
     assert filtered == [Path('test.py')]
-
 
 
 def test_create_ignore_manager_default_cwd(mocker: MockerFixture) -> None:
@@ -363,5 +385,3 @@ def test_ignore_patterns_with_whitespace(temp_dir: Path) -> None:
     # Test the patterns work
     assert should_ignore_file(Path('test.pyc'), spec, root_dir) is True
     assert should_ignore_file(Path('__pycache__/test.py'), spec, root_dir) is True
-
-

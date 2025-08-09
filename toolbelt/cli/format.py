@@ -1,7 +1,9 @@
 import argparse
 from pathlib import Path
-from toolbelt.runner.orchestrator import run_format
+
 from toolbelt.config.models import ToolbeltConfig
+from toolbelt.runner.orchestrator import run_format
+
 
 def add_format_subparser(
     subparsers: argparse._SubParsersAction,
@@ -26,6 +28,7 @@ def add_format_subparser(
         help='Specific files to format (if not provided, formats all files for the profile)',
     )
     return format_parser
+
 
 def handle_format_command(
     config: ToolbeltConfig,

@@ -44,7 +44,10 @@ def load_yaml_config(config_path: Path) -> ToolbeltConfig:
 
 def _load_python_module(config_path: Path) -> ModuleType:
     """Load a Python module from a file path."""
-    spec = importlib.util.spec_from_file_location('toolbelt_config', config_path)
+    spec = importlib.util.spec_from_file_location(
+        'toolbelt_config',
+        config_path,
+    )
     if spec is None or spec.loader is None:
         msg = f'Could not load Python config from {config_path}'
         raise ValueError(msg)
