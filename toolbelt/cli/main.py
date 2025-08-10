@@ -13,6 +13,7 @@ from .check import add_check_subparser, handle_check_command
 from .format import add_format_subparser, handle_format_command
 from .list import add_list_subparser, handle_list_command
 
+console = Console()
 
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser for toolbelt CLI."""
@@ -51,7 +52,6 @@ def create_parser() -> argparse.ArgumentParser:
 
 def show_config_sources(config_path: Path | None) -> list[Path]:
     """Display configuration sources being loaded."""
-    console = Console()
     sources = find_config_sources(config_path)
     if sources:
         console.print(
