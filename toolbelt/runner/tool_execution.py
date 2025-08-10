@@ -1,6 +1,7 @@
 import os
 import subprocess  # nosec S603
 import sys
+from os.path import normpath
 from pathlib import Path
 
 from toolbelt.config import ToolConfig, get_tool_command
@@ -74,8 +75,9 @@ def _build_log_context(
         'tool': tool.name,
         'command': ' '.join(command_parts),
     }
-    if tool.working_dir and str(Path.cwd()) != str(tool.working_dir):
-        log_context['working_dir'] = tool.working_dir
+    work_dir = tool.working_dir
+    if work_dir and normpath(str(Path.cwd())) != normpath(str(work_dir)):
+        log_context['working_dir'] = work_dir
     return log_context
 
 

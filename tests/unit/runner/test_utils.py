@@ -151,4 +151,5 @@ def test_expand_globs_in_args_cases(
         lambda _self, pattern: [Path(m) for m in tcase.glob_matches.get(pattern, [])],
     )
     result = expand_globs_in_args(tcase.args)
+    # Compare normalized paths for platform independence
     assert normalize_paths(result) == normalize_paths(tcase.expected)
