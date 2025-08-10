@@ -290,7 +290,7 @@ def _run_tools_for_profile(
                 return 0
             logger.info(
                 'checking' if tool_type == 'check' else 'formatting',
-                profile=profile,
+                profile=profile.name,
                 file_count=len(target_files),
             )
     else:

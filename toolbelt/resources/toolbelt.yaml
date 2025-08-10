@@ -107,8 +107,8 @@ profiles:
     check_tools: []
     format_tools:
       - name: "yq-format"
-        command: "uvx"
-        args: ["yq@latest", "eval", "."]
+        command: "yq"
+        args: ["eval", "."]
         output_to_file: true
         description: "YAML formatter using yq"
 
