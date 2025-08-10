@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -5,6 +6,10 @@ import pytest
 from pytest_mock import MockerFixture
 
 from toolbelt.runner.utils import expand_globs_in_args
+
+
+def normalize_paths(paths):
+    return [os.path.normpath(str(p)) for p in paths]
 
 
 @dataclass
@@ -146,4 +151,4 @@ def test_expand_globs_in_args_cases(
         lambda _self, pattern: [Path(m) for m in tcase.glob_matches.get(pattern, [])],
     )
     result = expand_globs_in_args(tcase.args)
-    assert result == tcase.expected
+    assert normalize_paths(result) == normalize_paths(tcase.expected)
