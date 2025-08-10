@@ -15,6 +15,7 @@ from .list import add_list_subparser, handle_list_command
 
 console = Console()
 
+
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser for toolbelt CLI."""
     parser = argparse.ArgumentParser(

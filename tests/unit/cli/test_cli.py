@@ -219,7 +219,10 @@ def test_main_verbose_logging_configuration(mocker: MockerFixture) -> None:
     # Mock dependencies
     mock_configure_logging = mocker.patch('toolbelt.cli.main.configure_logging')
     mocker.patch('toolbelt.cli.main.get_logger')
-    mock_run_check = mocker.patch('toolbelt.cli.check.run_check', return_value=0)
+    mock_run_check = mocker.patch(
+        'toolbelt.cli.check.run_check',
+        return_value=0,
+    )
 
     # Setup config
     mock_config = mocker.MagicMock()
@@ -272,7 +275,10 @@ def test_main_logs_startup_information(mocker: MockerFixture) -> None:
     """Test that main function executes successfully and calls expected functions."""
     # Mock dependencies
     mock_configure_logging = mocker.patch('toolbelt.cli.main.configure_logging')
-    mock_run_check = mocker.patch('toolbelt.cli.check.run_check', return_value=0)
+    mock_run_check = mocker.patch(
+        'toolbelt.cli.check.run_check',
+        return_value=0,
+    )
 
     # Setup config
     mock_config = mocker.MagicMock()
