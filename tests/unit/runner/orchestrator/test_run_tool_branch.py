@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TypedDict
+from typing import TypedDict, Unpack
 from unittest.mock import MagicMock
 
 import pytest
@@ -60,9 +60,14 @@ class ToolBranchCase:
     expected_result: int = 0
 
 
+class ToolConfigOverrides(TypedDict):
+    use_file_mode: bool
+    target_files: list[Path] | None
+
+
 def create_base_context(
     tool: ToolConfig,
-    **overrides: dict[str, str],
+    **overrides: Unpack[ToolConfigOverrides],
 ) -> ToolBranchContext:
     """Create a base ToolBranchContext with optional overrides."""
     defaults = {
