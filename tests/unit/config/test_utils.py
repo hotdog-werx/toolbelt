@@ -1,7 +1,9 @@
+import os
 from dataclasses import dataclass
 
 import pytest
 
+from toolbelt.config.loader import get_env_variables_context
 from toolbelt.config.utils import (
     expand_template_string,
     expand_template_strings,
@@ -98,6 +100,66 @@ def test_expand_template_strings_should_expand_correctly() -> None:
         {'X': 'x', 'Z': 'z'},
     )
     assert result == ['x', 'yy', 'z']
+
+
+def test_environment_variables_in_template_expansion() -> None:
+    """Test that environment variables can be used in template expansion.
+
+    This test verifies the complete flow: environment variables are filtered
+    by the loader and can be used in template substitution.
+    """
+    # Set up test environment variables
+    test_env_vars = {
+        'TOOLBELT_TEST_VAR': 'test_value',
+        'TB_BRANCH': 'main',
+        'CI_BUILD_NUMBER': '123',
+        'SECRET_VAR': 'should_not_be_accessible',  # Should be filtered out
+    }
+
+    # Temporarily modify environment
+    original_env = {}
+    for key, value in test_env_vars.items():
+        original_env[key] = os.environ.get(key)
+        os.environ[key] = value
+
+    try:
+        # Get filtered environment variables
+        env_context = get_env_variables_context()
+
+        # Verify filtering works correctly
+        assert 'TOOLBELT_TEST_VAR' in env_context
+        assert 'TB_BRANCH' in env_context
+        assert 'CI_BUILD_NUMBER' in env_context
+        assert 'SECRET_VAR' not in env_context  # Should be filtered out
+
+        # Test template expansion with environment variables
+        test_cases = [
+            ('${TOOLBELT_TEST_VAR}', 'test_value'),
+            ('branch: ${TB_BRANCH}', 'branch: main'),
+            ('build-${CI_BUILD_NUMBER}', 'build-123'),
+            ('${TB_BRANCH}-${CI_BUILD_NUMBER}', 'main-123'),
+            (
+                '${MISSING_VAR:default}',
+                'default',
+            ),  # Test default with missing env var
+        ]
+
+        for template, expected in test_cases:
+            result = expand_template_string(template, env_context)
+            assert result == expected, f"Template '{template}' should expand to '{expected}', got '{result}'"
+
+        # Test with additional regular variables (should override env vars)
+        combined_vars = {**env_context, 'TB_BRANCH': 'override_branch'}
+        result = expand_template_string('${TB_BRANCH}', combined_vars)
+        assert result == 'override_branch'
+
+    finally:
+        # Restore original environment
+        for key, original_value in original_env.items():
+            if original_value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = original_value
 
 
 @dataclass

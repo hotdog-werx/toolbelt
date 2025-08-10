@@ -1,6 +1,7 @@
 """Configuration file loading utilities."""
 
 import importlib.util
+import os
 import tomllib  # Python 3.11+ only
 from pathlib import Path
 from types import ModuleType
@@ -16,6 +17,18 @@ from .models import ToolbeltConfig
 from .parser import parse_toolbelt_config
 
 log = get_logger(__name__)
+
+
+def get_env_variables_context() -> dict[str, str]:
+    """Get environment variables that are safe to use in templates.
+
+    Only allows variables with specific prefixes to avoid exposing sensitive data.
+
+    Returns:
+        Dictionary of filtered environment variables.
+    """
+    allowed_prefixes = ('TOOLBELT_', 'TB_', 'TBELT_', 'CI_', 'BUILD_')
+    return {k: v for k, v in os.environ.items() if any(k.startswith(prefix) for prefix in allowed_prefixes)}
 
 
 def load_yaml_config(config_path: Path) -> ToolbeltConfig:
@@ -274,9 +287,13 @@ def merge_configs(
     # Merge global exclude patterns
     merged_excludes = base.global_exclude_patterns + override.global_exclude_patterns
 
+    # Merge variables: env vars (lowest priority) < base < override (highest priority)
+    env_vars = get_env_variables_context()
+    merged_variables = {**env_vars, **base.variables, **override.variables}
+
     return ToolbeltConfig(
         sources=[*base.sources, *override.sources],
         profiles=merged_languages,
         global_exclude_patterns=merged_excludes,
-        variables={**base.variables, **override.variables},
+        variables=merged_variables,
     )
