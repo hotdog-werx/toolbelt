@@ -229,3 +229,145 @@ def test_load_config_multiple(
         str(sample_yaml_config),
         str(sample_python_config),
     ]
+
+
+def test_load_config_applies_environment_variables() -> None:
+    """Test that environment variables are applied during config loading with correct precedence."""
+    import os
+    import tempfile
+    from pathlib import Path
+
+    # Set up test environment variables
+    test_env_vars = {
+        'TB_TEST_VAR': 'env_value',
+        'TB_OVERRIDE_VAR': 'env_override',
+    }
+    
+    original_env = {}
+    for key, value in test_env_vars.items():
+        original_env[key] = os.environ.get(key)
+        os.environ[key] = value
+
+    config_path = None
+    try:
+        # Create a temporary config file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+            f.write("""
+variables:
+  config_var: "config_value"
+  override_var: "config_override"  # This should be overridden by env var
+
+profiles:
+  test:
+    name: "test"
+    extensions: [".py"]
+    check_tools:
+      - name: "test_tool"
+        command: "echo"
+        args: ["${config_var}", "${TB_TEST_VAR}", "${TB_OVERRIDE_VAR}"]
+    format_tools: []
+""")
+            config_path = Path(f.name)
+
+        # Load config and verify environment variables are applied
+        config = load_config([config_path])
+        
+        # Check that environment variables are in the final variables
+        assert 'TB_TEST_VAR' in config.variables
+        assert config.variables['TB_TEST_VAR'] == 'env_value'
+        
+        # Check that environment variables override config variables
+        assert 'TB_OVERRIDE_VAR' in config.variables
+        assert config.variables['TB_OVERRIDE_VAR'] == 'env_override'
+        
+        # Check that config variables are still present
+        assert config.variables['config_var'] == 'config_value'
+        
+        # Test template expansion in tool command
+        profile = config.get_profile('test')
+        assert profile is not None
+        tool = profile.check_tools[0]
+        
+        from toolbelt.config.models import get_tool_command
+        command = get_tool_command(tool, variables=config.get_variables())
+        
+        # The command should have expanded variables
+        expected_args = ['echo', 'config_value', 'env_value', 'env_override']
+        assert command.full_command == expected_args
+
+    finally:
+        # Clean up
+        if config_path:
+            config_path.unlink(missing_ok=True)
+        # Restore original environment
+        for key, original_value in original_env.items():
+            if original_value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = original_value
+
+
+def test_load_config_environment_variables_precedence_across_multiple_files() -> None:
+    """Test that environment variables have highest precedence across multiple config files."""
+    import os
+    import tempfile
+    from pathlib import Path
+
+    # Set up test environment variables
+    os.environ['TB_MULTI_VAR'] = 'env_final_value'
+    
+    config_path1 = None
+    config_path2 = None
+    try:
+        # Create two temporary config files
+        with tempfile.NamedTemporaryFile(mode='w', suffix='_base.yaml', delete=False) as f1:
+            f1.write("""
+variables:
+  multi_var: "base_value"
+  base_only: "base_only_value"
+
+profiles:
+  test:
+    name: "test"
+    extensions: [".py"]
+    check_tools:
+      - name: "test_tool"
+        command: "echo"
+        args: ["base"]
+    format_tools: []
+""")
+            config_path1 = Path(f1.name)
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='_override.yaml', delete=False) as f2:
+            f2.write("""
+variables:
+  multi_var: "override_value"  # Should be overridden by env
+  override_only: "override_only_value"
+
+profiles:
+  test:
+    extensions: [".py"]
+    check_tools:
+      - name: "test_tool"
+        command: "echo"
+        args: ["${multi_var}", "${TB_MULTI_VAR}", "${base_only}", "${override_only}"]
+    format_tools: []
+""")
+            config_path2 = Path(f2.name)
+
+        # Load config from multiple sources
+        config = load_config([config_path1, config_path2])
+        
+        # Verify final precedence: env > config2 > config1
+        assert config.variables['TB_MULTI_VAR'] == 'env_final_value'  # env var
+        assert config.variables['multi_var'] == 'override_value'      # config2 overrides config1
+        assert config.variables['base_only'] == 'base_only_value'     # from config1
+        assert config.variables['override_only'] == 'override_only_value'  # from config2
+
+    finally:
+        # Clean up
+        if config_path1:
+            config_path1.unlink(missing_ok=True)
+        if config_path2:
+            config_path2.unlink(missing_ok=True)
+        os.environ.pop('TB_MULTI_VAR', None)

@@ -214,20 +214,27 @@ def load_config(config_paths: list[Path] | None = None) -> ToolbeltConfig:
     sources = config_paths if config_paths is not None else find_config_sources()
 
     if not sources:
-        # Return default configuration
-        return get_default_config()
+        # Return default configuration with environment variables
+        config = get_default_config()
+    elif len(sources) == 1:
+        # Single source: load it directly
+        config = load_config_from_file(sources[0])
+    else:
+        # Multiple sources: merge them in order
+        config = load_config_from_file(sources[0])
+        for source in sources[1:]:
+            override_config = load_config_from_file(source)
+            config = merge_configs(config, override_config)
 
-    # If only one source, load it directly
-    if len(sources) == 1:
-        return load_config_from_file(sources[0])
+    # Apply environment variables as final step (highest precedence)
+    env_variables = get_env_variables_context()
+    if env_variables:
+        # Create a new config with environment variables merged
+        # Environment variables override all other variable sources
+        final_variables = {**config.variables, **env_variables}
+        config = config.model_copy(update={'variables': final_variables})
 
-    # Multiple sources: merge them in order
-    merged_config = load_config_from_file(sources[0])
-    for source in sources[1:]:
-        override_config = load_config_from_file(source)
-        merged_config = merge_configs(merged_config, override_config)
-
-    return merged_config
+    return config
 
 
 def load_pyproject_toml(pyproject_path: Path) -> dict[str, Any] | None:
@@ -287,9 +294,9 @@ def merge_configs(
     # Merge global exclude patterns
     merged_excludes = base.global_exclude_patterns + override.global_exclude_patterns
 
-    # Merge variables: env vars (lowest priority) < base < override (highest priority)
-    env_vars = get_env_variables_context()
-    merged_variables = {**env_vars, **base.variables, **override.variables}
+    # Merge variables: base < override (config files only)
+    # Environment variables will be applied later in load_config()
+    merged_variables = {**base.variables, **override.variables}
 
     return ToolbeltConfig(
         sources=[*base.sources, *override.sources],
