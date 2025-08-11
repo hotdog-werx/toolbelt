@@ -1,5 +1,6 @@
 """Unit tests for toolbelt CLI functionality - Function-based approach."""
 
+from pydoc import cli
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,6 +13,7 @@ from pytest_mock import MockerFixture
 
 import toolbelt.cli.main
 from toolbelt.cli import main as cli_mod
+from toolbelt.cli import _utils as cli_utils
 from toolbelt.cli.main import create_parser, main, show_config_sources
 
 
@@ -196,9 +198,9 @@ def test_show_config_sources(
     mocker: MockerFixture,
 ) -> None:
     """Test show_config_sources function with different source scenarios."""
-    mock_console = mocker.patch.object(cli_mod, 'console')
+    mock_console = mocker.patch.object(cli_utils, 'console')
     mocker.patch.object(
-        cli_mod,
+        cli_utils,
         'find_config_sources',
         return_value=tcase.sources,
     )
@@ -358,7 +360,7 @@ def test_main_with_sources_flag(mocker: MockerFixture) -> None:
     load_config_mock.return_value = mock_config
 
     # Don't mock show_config_sources - let it execute to get coverage
-    mock_console = mocker.patch('toolbelt.cli.main.console')
+    mock_console = mocker.patch.object(cli_utils, 'console')
 
     # Patch handler in toolbelt.cli module to ensure lookup works
     mock_handler = mocker.patch(

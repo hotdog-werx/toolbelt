@@ -3,17 +3,15 @@ import sys
 import traceback
 from pathlib import Path
 
-from rich.console import Console
-
 from toolbelt import __version__
-from toolbelt.config.loader import find_config_sources, load_config
+from toolbelt.config.loader import load_config
 from toolbelt.logging import configure_logging, get_logger
 
+from ._utils import show_config_sources as show_config_sources_util
 from .check import add_check_subparser, handle_check_command
+from .config import add_config_subparser, handle_config_command
 from .format import add_format_subparser, handle_format_command
 from .list import add_list_subparser, handle_list_command
-
-console = Console()
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -45,6 +43,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     add_check_subparser(subparsers)
+    add_config_subparser(subparsers)
     add_format_subparser(subparsers)
     add_list_subparser(subparsers)
 
@@ -53,19 +52,10 @@ def create_parser() -> argparse.ArgumentParser:
 
 def show_config_sources(config_path: Path | None) -> list[Path]:
     """Display configuration sources being loaded."""
-    sources = find_config_sources(config_path)
-    if sources:
-        console.print(
-            '[bold bright_blue]Configuration sources (in load order):[/bold bright_blue]',
-        )
-        for i, source in enumerate(sources, 1):
-            console.print(f'  [cyan]{i}.[/cyan] [white]{source}[/white]')
-    else:
-        console.print(
-            '[bold yellow]No configuration sources found, using defaults.[/bold yellow]',
-        )
-    console.print()  # Empty line for
-    return sources
+    return show_config_sources_util(
+        config_path,
+        'Configuration sources (in load order)',
+    )
 
 
 def _load_sources(args: argparse.Namespace) -> list[Path] | None:
@@ -94,6 +84,7 @@ def main() -> int:
 
         command_handlers = {
             'check': handle_check_command,
+            'config': handle_config_command,
             'format': handle_format_command,
             'list': handle_list_command,
         }

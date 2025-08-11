@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 from toolbelt.runner.utils import expand_globs_in_args
 
 
-def normalize_paths(paths):
+def normalize_paths(paths: list[Path]) -> list[str]:
     return [os.path.normpath(str(p)) for p in paths]
 
 
