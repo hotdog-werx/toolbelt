@@ -1,6 +1,5 @@
 """Unit tests for toolbelt CLI functionality - Function-based approach."""
 
-from pydoc import cli
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,8 +11,8 @@ import pytest
 from pytest_mock import MockerFixture
 
 import toolbelt.cli.main
-from toolbelt.cli import main as cli_mod
 from toolbelt.cli import _utils as cli_utils
+from toolbelt.cli import main as cli_mod
 from toolbelt.cli.main import create_parser, main, show_config_sources
 
 
