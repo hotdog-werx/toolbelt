@@ -95,7 +95,7 @@ profiles:
           [
             "-v",
             "--tb=short",
-            "--cov=${PROJECT_SOURCE:toolbelt}",
+            "--cov=${TB_PROJECT_SOURCE:toolbelt}",
             "--cov-report=term-missing",
             "--cov-report=html:.coverage-files/htmlcov",
           ]
@@ -121,3 +121,4 @@ variables:
   TB_RUFF_VERSION: latest
   TB_BASEDPYRIGHT_VERSION: latest
   TB_PRETTIER_VERSION: latest
+  TB_PROJECT_SOURCE: toolbelt
