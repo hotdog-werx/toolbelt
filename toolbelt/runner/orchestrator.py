@@ -13,6 +13,54 @@ from toolbelt.runner.tool_execution import (
 
 
 @dataclass
+class ToolExecutionContext:
+    """Context for executing multiple tools within a profile.
+
+    This groups parameters needed when executing all tools for a profile,
+    encapsulating the tool list, profile configuration, and execution mode.
+
+    Args:
+        tools: List of tools to execute
+        profile: The profile configuration containing file patterns and settings
+        config: Global toolbelt configuration with variables and settings
+        use_file_mode: True if specific files provided, False for discovery mode
+        target_files: Resolved list of files to process (None for discovery mode)
+        verbose: Whether to enable verbose logging during execution
+    """
+
+    tools: list[ToolConfig]
+    profile: ProfileConfig
+    config: ToolbeltConfig
+    use_file_mode: bool
+    target_files: list[Path] | None
+    verbose: bool
+
+
+@dataclass
+class TargetDeterminationContext:
+    """Context for determining target files based on tool types and provided files.
+
+    This groups parameters needed when deciding how to handle file targeting
+    for different tool types (batch vs per-file) and execution modes.
+
+    Args:
+        files: Optional list of specific files/paths provided by user
+        profile: The profile configuration containing file patterns and excludes
+        config: Global toolbelt configuration with exclude patterns
+        verbose: Whether to enable verbose logging during file discovery
+        tool_type: Type of tools ('check' or 'format') for logging purposes
+        tools: List of tools that will be executed
+    """
+
+    files: list[Path] | None
+    profile: ProfileConfig
+    config: ToolbeltConfig
+    verbose: bool
+    tool_type: str
+    tools: list[ToolConfig]
+
+
+@dataclass
 class TargetFilesContext:
     """Context for target files discovery.
 
@@ -263,12 +311,14 @@ def _run_tools_for_profile(
 
     use_file_mode = files is not None and len(files) > 0
     target_files = _determine_target_files(
-        files,
-        profile,
-        config,
-        verbose,
-        tool_type,
-        tools,
+        TargetDeterminationContext(
+            files=files,
+            profile=profile,
+            config=config,
+            verbose=verbose,
+            tool_type=tool_type,
+            tools=tools,
+        ),
     )
 
     if use_file_mode and target_files is None:
@@ -276,82 +326,72 @@ def _run_tools_for_profile(
         return 0
 
     return _execute_tools(
-        tools,
-        profile,
-        config,
-        use_file_mode,
-        target_files,
-        verbose,
+        ToolExecutionContext(
+            tools=tools,
+            profile=profile,
+            config=config,
+            use_file_mode=use_file_mode,
+            target_files=target_files,
+            verbose=verbose,
+        ),
     )
 
 
 def _determine_target_files(
-    files: list[Path] | None,
-    profile,
-    config: ToolbeltConfig,
-    verbose: bool,
-    tool_type: str,
-    tools,
+    ctx: TargetDeterminationContext,
 ) -> list[Path] | None:
     """Determine the target files based on tool types and provided files."""
-    if files is None or len(files) == 0:
+    if ctx.files is None or len(ctx.files) == 0:
         # Discovery mode: No specific files provided
-        logger.info('discovering', profile_name=profile.name)
+        logger.info('discovering', profile_name=ctx.profile.name)
         return None
 
     # COMPLEX LOGIC: Handle mixed tool types when specific files are provided
     # Batch tools: Can handle non-existent paths, pass paths directly
     # Per-file tools: Need actual files, filter to existing files
-    has_batch_tools = any(tool.file_handling_mode == 'batch' for tool in tools)
+    has_batch_tools = any(tool.file_handling_mode == 'batch' for tool in ctx.tools)
 
     if has_batch_tools:
         # Pass provided files/paths directly - let the tool handle them
         logger.info(
-            'checking' if tool_type == 'check' else 'formatting',
-            profile_name=profile.name,
-            provided_paths=[str(f) for f in files],
+            'checking' if ctx.tool_type == 'check' else 'formatting',
+            profile_name=ctx.profile.name,
+            provided_paths=[str(f) for f in ctx.files],
         )
-        return files
+        return ctx.files
     # Per-file mode - filter to existing files
     tf_ctx = TargetFilesContext(
-        profile=profile,
-        files=files,
-        global_exclude_patterns=config.global_exclude_patterns,
-        verbose=verbose,
-        provided_files=[str(f) for f in files],
+        profile=ctx.profile,
+        files=ctx.files,
+        global_exclude_patterns=ctx.config.global_exclude_patterns,
+        verbose=ctx.verbose,
+        provided_files=[str(f) for f in ctx.files],
         log_type='no_files',
     )
     target_files = _get_target_files_or_log(tf_ctx)
     if not target_files:
         return None
     logger.info(
-        'checking' if tool_type == 'check' else 'formatting',
-        profile=profile.name,
+        'checking' if ctx.tool_type == 'check' else 'formatting',
+        profile=ctx.profile.name,
         file_count=len(target_files),
     )
     return target_files
 
 
-def _execute_tools(
-    tools,
-    profile,
-    config: ToolbeltConfig,
-    use_file_mode: bool,
-    target_files: list[Path] | None,
-    verbose: bool,
-) -> int:
+def _execute_tools(ctx: ToolExecutionContext) -> int:
     """Execute all tools and return the final exit code."""
     exit_code = 0
-    for tool in tools:
+    for tool in ctx.tools:
         branch_ctx = ToolBranchContext(
             tool=tool,
-            profile=profile,
-            use_file_mode=use_file_mode,
-            target_files=target_files,
-            global_exclude_patterns=config.global_exclude_patterns,
-            verbose=verbose,
+            profile=ctx.profile,
+            use_file_mode=ctx.use_file_mode,
+            target_files=ctx.target_files,
+            global_exclude_patterns=ctx.config.global_exclude_patterns,
+            verbose=ctx.verbose,
         )
-        result = _run_tool_branch(branch_ctx, config.variables)
+        result = _run_tool_branch(branch_ctx, ctx.config.variables)
         if result != 0:
             exit_code = result
     return exit_code

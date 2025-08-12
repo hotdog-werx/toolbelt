@@ -264,28 +264,33 @@ def test_run_tool_branch(
     assert result == case.expected_result
 
     # Verify correct execution path was taken
+    _verify_execution_mode(tool_branch_mocks, case)
+
+
+def _verify_execution_mode(mocks: ToolBranchMocks, case: ToolBranchCase) -> None:
+    """Verify the correct execution mode was called based on the test case."""
     if case.expected_execution_mode == 'file_output':
-        tool_branch_mocks['run_tool_with_file_output'].assert_called_once()
-        tool_branch_mocks['run_tool_per_file_mode'].assert_not_called()
-        tool_branch_mocks['run_tool_in_discovery_mode'].assert_not_called()
+        mocks['run_tool_with_file_output'].assert_called_once()
+        mocks['run_tool_per_file_mode'].assert_not_called()
+        mocks['run_tool_in_discovery_mode'].assert_not_called()
     elif case.expected_execution_mode == 'per_file':
-        tool_branch_mocks['run_tool_per_file_mode'].assert_called_once()
-        tool_branch_mocks['run_tool_with_file_output'].assert_not_called()
-        tool_branch_mocks['run_tool_in_discovery_mode'].assert_not_called()
+        mocks['run_tool_per_file_mode'].assert_called_once()
+        mocks['run_tool_with_file_output'].assert_not_called()
+        mocks['run_tool_in_discovery_mode'].assert_not_called()
     elif case.expected_execution_mode == 'batch':
-        tool_branch_mocks['run_tool_in_discovery_mode'].assert_called_once()
-        tool_branch_mocks['run_tool_with_file_output'].assert_not_called()
-        tool_branch_mocks['run_tool_per_file_mode'].assert_not_called()
+        mocks['run_tool_in_discovery_mode'].assert_called_once()
+        mocks['run_tool_with_file_output'].assert_not_called()
+        mocks['run_tool_per_file_mode'].assert_not_called()
     elif case.expected_execution_mode == 'no_files_warning':
-        tool_branch_mocks['logger'].warning.assert_called_once()
+        mocks['logger'].warning.assert_called_once()
         # Verify warning message
-        warning_call = tool_branch_mocks['logger'].warning.call_args
+        warning_call = mocks['logger'].warning.call_args
         assert warning_call[0][0] == 'no_files_found'
         assert warning_call[1]['tool'] == case.tool.name
     elif case.expected_execution_mode == 'error':
-        tool_branch_mocks['logger'].error.assert_called_once()
+        mocks['logger'].error.assert_called_once()
         # Verify error message
-        error_call = tool_branch_mocks['logger'].error.call_args
+        error_call = mocks['logger'].error.call_args
         assert error_call[0][0] == 'invalid_file_handling_mode'
         assert error_call[1]['tool'] == case.tool.name
         assert error_call[1]['file_handling_mode'] == 'invalid'

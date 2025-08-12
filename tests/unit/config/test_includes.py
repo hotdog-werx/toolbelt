@@ -1,6 +1,9 @@
 """Test the include functionality in config files."""
 
 from pathlib import Path
+from typing import IO, Any
+
+from pytest_mock import MockerFixture
 
 from toolbelt.config.file_loaders import load_python_config, load_yaml_config
 
@@ -28,7 +31,7 @@ include:
 
 variables:
   main_var: "main_value"
-  
+
 profiles:
   main_profile:
     extensions: [".py"]
@@ -426,9 +429,9 @@ config = {
     assert config.variables['included_var'] == 'included_value'
 
 
-def test_include_resolution_fails(temp_dir: Path, mocker):
+def test_include_resolution_fails(temp_dir: Path, mocker: MockerFixture):
     """Test include with resolution failure (covers lines 369-370)."""
-    from toolbelt.config import includes
+    from toolbelt.config import includes  # noqa: PLC0415
 
     # Mock resolve_config_reference to return None
     mock_resolve = mocker.patch.object(
@@ -501,9 +504,9 @@ profiles:
     assert 'yaml_profile' in config.profiles
 
 
-def test_include_loading_exception(temp_dir: Path, mocker):
+def test_include_loading_exception(temp_dir: Path, mocker: MockerFixture):
     """Test exception handling during include loading (covers lines 412-414)."""
-    import yaml
+    import yaml  # noqa: PLC0415
 
     # Create a base config to include
     base_config = temp_dir / 'base.yaml'
@@ -517,9 +520,10 @@ profiles: {}
     # Mock yaml.safe_load to throw an exception
     original_safe_load = yaml.safe_load
 
-    def mock_safe_load(stream):
+    def mock_safe_load(stream: IO[str]) -> dict[str, Any] | None:
         if hasattr(stream, 'name') and 'base.yaml' in stream.name:
-            raise yaml.YAMLError('Corrupted YAML file')
+            msg = 'Corrupted YAML file'
+            raise yaml.YAMLError(msg)
         return original_safe_load(stream)
 
     mocker.patch.object(yaml, 'safe_load', side_effect=mock_safe_load)
@@ -543,7 +547,7 @@ profiles: {}
     assert 'base_var' not in config.variables
 
 
-def test_include_python_file_exception(temp_dir: Path, mocker):
+def test_include_python_file_exception(temp_dir: Path, mocker: MockerFixture):
     """Test exception handling when including malformed Python file."""
     # Create a malformed Python file
     python_include = temp_dir / 'broken.py'

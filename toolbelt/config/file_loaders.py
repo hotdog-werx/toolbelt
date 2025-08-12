@@ -21,7 +21,7 @@ def load_yaml_config(config_path: Path) -> ToolbeltConfig:
     Returns:
         A ToolbeltConfig object representing the loaded configuration.
     """
-    from .includes import process_includes  # Avoid circular import
+    from .includes import process_includes  # Avoid circular import  # noqa: PLC0415
 
     try:
         with Path(config_path).open('r') as f:
@@ -87,17 +87,14 @@ def load_python_config(config_path: Path) -> ToolbeltConfig:
     Returns:
         A ToolbeltConfig object representing the loaded configuration.
     """
-    from .includes import process_includes  # Avoid circular import
+    from .includes import process_includes  # Avoid circular import  # noqa: PLC0415
 
     try:
         module = _load_python_module(config_path)
         config_or_data = _extract_config_from_module(module)
 
         # Convert to dict for include processing
-        if isinstance(config_or_data, ToolbeltConfig):
-            data = config_or_data.model_dump()
-        else:
-            data = config_or_data
+        data = config_or_data.model_dump() if isinstance(config_or_data, ToolbeltConfig) else config_or_data
 
         # Process includes before final parsing
         processed_data, include_sources = process_includes(

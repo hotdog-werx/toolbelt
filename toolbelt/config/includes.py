@@ -90,7 +90,7 @@ def process_includes(
     return merged_data, sources
 
 
-def _normalize_includes_list(includes: Any) -> list[str]:
+def _normalize_includes_list(includes: str | list[str]) -> list[str]:
     """Normalize includes to a list format."""
     if not isinstance(includes, list):
         return [includes]
@@ -109,19 +109,30 @@ def _process_single_include(
     """
     resolved_path = resolve_config_reference(include_ref, base_path)
     if not resolved_path:
-        log.warning(f'Failed to resolve include reference: {include_ref}')
+        log.warning(
+            'include_reference_resolution_failed',
+            include_ref=include_ref,
+        )
         return None
 
     resolved_path_str = str(resolved_path)
 
     # Check for circular dependency
     if resolved_path_str in processed_sources:
-        log.warning(f'Circular dependency detected, skipping: {include_ref}')
+        log.warning(
+            'circular_dependency_detected',
+            include_ref=include_ref,
+            resolved_path=resolved_path_str,
+        )
         return None
 
     # Check if file exists (for non-package resources)
     if not include_ref.startswith('@') and not resolved_path.exists():
-        log.warning(f'Include file not found: {resolved_path}')
+        log.warning(
+            'include_file_not_found',
+            include_ref=include_ref,
+            resolved_path=str(resolved_path),
+        )
         return None
 
     try:
@@ -135,12 +146,16 @@ def _process_single_include(
             processed_sources.copy(),
         )
 
-        sources = included_sources + [resolved_path_str]
-        return included_data, sources
-
-    except Exception as e:
-        log.warning(f'Failed to load include {include_ref}: {e}')
+    except Exception as e:  # noqa: BLE001
+        log.warning(
+            'include_load_failed',
+            include_ref=include_ref,
+            error=str(e),
+        )
         return None
+    else:
+        sources = [*included_sources, resolved_path_str]
+        return included_data, sources
     finally:
         # Remove from processed sources after processing to allow same file
         # to be included in different branches
@@ -162,8 +177,8 @@ def _load_include_file(resolved_path: Path) -> dict[str, Any]:
 def _load_python_include_file(resolved_path: Path) -> dict[str, Any]:
     """Load data from a Python include file."""
     # Import file_loaders functions here to avoid circular import
-    from .file_loaders import _extract_config_from_module, _load_python_module
-    from .models import ToolbeltConfig
+    from .file_loaders import _extract_config_from_module, _load_python_module  # noqa: PLC0415
+    from .models import ToolbeltConfig  # noqa: PLC0415
 
     module = _load_python_module(resolved_path)
     included_config_or_data = _extract_config_from_module(module)
