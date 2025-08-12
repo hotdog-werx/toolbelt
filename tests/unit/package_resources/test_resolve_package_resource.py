@@ -2,7 +2,7 @@ from tempfile import gettempdir
 
 from toolbelt.package_resources import resolve_package_resource
 
-RESOURCE_REF = '@toolbelt:resources/toolbelt.yaml'
+RESOURCE_REF = '@toolbelt:resources/presets/python-hdw.yaml'
 
 
 def test_resolve_package_resource_dev_mode():
@@ -15,4 +15,3 @@ def test_resolve_package_resource_dev_mode():
     # Check content
     content = path.read_text()
     assert 'python:' in content
-    assert 'prettier:' in content

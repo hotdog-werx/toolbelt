@@ -48,4 +48,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.toolbelt]
-include = ["@toolbelt:resources/toolbelt.yaml", "toolbelt.yaml"]
+include = ["@toolbelt:resources/presets/hdw.yaml", "toolbelt.yaml"]

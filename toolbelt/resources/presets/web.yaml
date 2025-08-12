@@ -1,0 +1,20 @@
+profiles:
+  prettier:
+    extensions: [".md", ".json", ".yaml", ".yml"]
+    check_tools:
+      - name: "prettier"
+        command: "pnpm"
+        args: ["dlx", "prettier@${TB_PRETTIER_VERSION}", "--check"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Prettier formatter"
+    format_tools:
+      - name: "prettier"
+        command: "pnpm"
+        args: ["dlx", "prettier@${TB_PRETTIER_VERSION}", "--write"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Prettier formatter"
+
+variables:
+  TB_PRETTIER_VERSION: latest

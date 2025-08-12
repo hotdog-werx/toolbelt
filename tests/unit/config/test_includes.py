@@ -94,7 +94,7 @@ def test_package_resource_include(temp_dir: Path):
     main_config = temp_dir / 'main.yaml'
     main_config.write_text("""
 include:
-  - "@toolbelt:resources/toolbelt.yaml"
+  - "@toolbelt:resources/presets/hdw.yaml"
 
 variables:
   my_var: "my_value"
@@ -114,7 +114,7 @@ profiles: {}
     assert 'TB_RUFF_VERSION' in config.variables
     
     # Check sources include the package resource
-    assert any('resources/toolbelt.yaml' in source for source in config.sources)
+    assert any('resources/presets/hdw.yaml' in source for source in config.sources)
 
 
 def test_include_with_missing_file(temp_dir: Path):
