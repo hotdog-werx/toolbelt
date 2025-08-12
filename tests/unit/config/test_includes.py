@@ -115,7 +115,8 @@ profiles: {}
     assert 'TB_RUFF_VERSION' in config.variables
 
     # Check sources include the package resource
-    assert any('resources/presets/hdw.yaml' in source for source in config.sources)
+    expected_resource = Path('resources/presets/hdw.yaml')
+    assert any(Path(source).as_posix().endswith(expected_resource.as_posix()) for source in config.sources)
 
 
 def test_include_with_missing_file(temp_dir: Path):

@@ -267,7 +267,10 @@ def test_run_tool_branch(
     _verify_execution_mode(tool_branch_mocks, case)
 
 
-def _verify_execution_mode(mocks: ToolBranchMocks, case: ToolBranchCase) -> None:
+def _verify_execution_mode(
+    mocks: ToolBranchMocks,
+    case: ToolBranchCase,
+) -> None:
     """Verify the correct execution mode was called based on the test case."""
     if case.expected_execution_mode == 'file_output':
         mocks['run_tool_with_file_output'].assert_called_once()

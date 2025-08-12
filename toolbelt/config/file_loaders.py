@@ -21,7 +21,8 @@ def load_yaml_config(config_path: Path) -> ToolbeltConfig:
     Returns:
         A ToolbeltConfig object representing the loaded configuration.
     """
-    from .includes import process_includes  # Avoid circular import  # noqa: PLC0415
+    # Avoid circular import
+    from .includes import process_includes  # noqa: PLC0415
 
     try:
         with Path(config_path).open('r') as f:
@@ -87,7 +88,8 @@ def load_python_config(config_path: Path) -> ToolbeltConfig:
     Returns:
         A ToolbeltConfig object representing the loaded configuration.
     """
-    from .includes import process_includes  # Avoid circular import  # noqa: PLC0415
+    # Avoid circular import
+    from .includes import process_includes  # noqa: PLC0415
 
     try:
         module = _load_python_module(config_path)
