@@ -2,9 +2,7 @@
 
 from pathlib import Path
 
-import pytest
-
-from toolbelt.config.file_loaders import load_yaml_config, load_python_config
+from toolbelt.config.file_loaders import load_python_config, load_yaml_config
 
 
 def test_basic_include(temp_dir: Path):
@@ -40,15 +38,15 @@ profiles:
 
     # Load the main config
     config = load_yaml_config(main_config)
-    
+
     # Check that both profiles are present
     assert 'base_profile' in config.profiles
     assert 'main_profile' in config.profiles
-    
+
     # Check that both variables are present
     assert config.variables['base_var'] == 'base_value'
     assert config.variables['main_var'] == 'main_value'
-    
+
     # Check sources
     assert len(config.sources) == 2
     assert str(base_config) in config.sources
@@ -83,7 +81,7 @@ profiles: {}
 
     # Load config A - should handle circular dependency gracefully
     config = load_yaml_config(config_a)
-    
+
     # Should still work, just skip the circular include
     assert 'var_a' in config.variables
 
@@ -104,15 +102,15 @@ profiles: {}
 
     # Load the main config
     config = load_yaml_config(main_config)
-    
+
     # Should have profiles from the toolbelt resource
     assert 'python' in config.profiles
     assert 'yaml' in config.profiles
-    
+
     # Should have both original and new variables
     assert config.variables['my_var'] == 'my_value'
     assert 'TB_RUFF_VERSION' in config.variables
-    
+
     # Check sources include the package resource
     assert any('resources/presets/hdw.yaml' in source for source in config.sources)
 
@@ -189,17 +187,17 @@ profiles:
 
     # Load the top-level config
     config = load_yaml_config(level1_config)
-    
+
     # Should have all profiles
     assert 'level1_profile' in config.profiles
     assert 'level2_profile' in config.profiles
     assert 'level3_profile' in config.profiles
-    
+
     # Should have all variables
     assert config.variables['level1_var'] == 'level1_value'
     assert config.variables['level2_var'] == 'level2_value'
     assert config.variables['level3_var'] == 'level3_value'
-    
+
     # Should have all sources
     assert len(config.sources) == 3
     assert str(level3_config) in config.sources
@@ -303,11 +301,11 @@ config = {
 """)
 
     config = load_python_config(python_config)
-    
+
     # Should have variables from both files
     assert config.variables['python_var'] == 'python_value'
     # Note: base_var might not be present due to include processing order
-    
+
     # Should have profiles from both files
     assert 'python_profile' in config.profiles
 
@@ -358,9 +356,9 @@ variables: {}
 """)
 
     config = load_yaml_config(main_config)
-    
+
     # Should have all exclude patterns concatenated
-    expected_patterns = ["*.tmp", "build/", "*.log", "dist/"]
+    expected_patterns = ['*.tmp', 'build/', '*.log', 'dist/']
     for pattern in expected_patterns:
         assert pattern in config.global_exclude_patterns
 
@@ -387,7 +385,7 @@ config = {
 """)
 
     config = load_python_config(python_config)
-    
+
     # The important thing is that line 116 gets executed (sources are added)
     assert str(python_config) in config.sources
     # Check if variables merged correctly (indicating includes processed)
@@ -418,11 +416,11 @@ config = {
 """)
 
     config = load_python_config(python_config)
-    
+
     # Verify the include was processed (this ensures line 116 was hit)
     assert len(config.sources) >= 2  # Should have both files
     assert str(python_config) in config.sources  # Main file always added
-    
+
     # Verify both variables are present, proving include worked
     assert config.variables['main_var'] == 'main_value'
     assert config.variables['included_var'] == 'included_value'
@@ -431,10 +429,14 @@ config = {
 def test_include_resolution_fails(temp_dir: Path, mocker):
     """Test include with resolution failure (covers lines 369-370)."""
     from toolbelt.config import includes
-    
+
     # Mock resolve_config_reference to return None
-    mock_resolve = mocker.patch.object(includes, 'resolve_config_reference', return_value=None)
-    
+    mock_resolve = mocker.patch.object(
+        includes,
+        'resolve_config_reference',
+        return_value=None,
+    )
+
     main_config = temp_dir / 'main.yaml'
     main_config.write_text("""
 include:
@@ -447,7 +449,7 @@ profiles: {}
 """)
 
     config = load_yaml_config(main_config)
-    
+
     # Should still load successfully, just skip the failed include
     assert config.variables['my_var'] == 'my_value'
     mock_resolve.assert_called_once()
@@ -489,11 +491,11 @@ profiles:
 """)
 
     config = load_yaml_config(main_config)
-    
+
     # Should have variables from both files
     assert config.variables['python_var'] == 'from_python'
     assert config.variables['yaml_var'] == 'from_yaml'
-    
+
     # Should have profiles from both files
     assert 'python_profile' in config.profiles
     assert 'yaml_profile' in config.profiles
@@ -501,9 +503,8 @@ profiles:
 
 def test_include_loading_exception(temp_dir: Path, mocker):
     """Test exception handling during include loading (covers lines 412-414)."""
-    from toolbelt.config import loader
     import yaml
-    
+
     # Create a base config to include
     base_config = temp_dir / 'base.yaml'
     base_config.write_text("""
@@ -515,11 +516,12 @@ profiles: {}
 
     # Mock yaml.safe_load to throw an exception
     original_safe_load = yaml.safe_load
+
     def mock_safe_load(stream):
         if hasattr(stream, 'name') and 'base.yaml' in stream.name:
-            raise yaml.YAMLError("Corrupted YAML file")
+            raise yaml.YAMLError('Corrupted YAML file')
         return original_safe_load(stream)
-    
+
     mocker.patch.object(yaml, 'safe_load', side_effect=mock_safe_load)
 
     main_config = temp_dir / 'main.yaml'
@@ -534,7 +536,7 @@ profiles: {}
 """)
 
     config = load_yaml_config(main_config)
-    
+
     # Should still load the main config, just skip the failed include
     assert config.variables['main_var'] == 'main_value'
     # base_var should not be present since include failed
@@ -543,8 +545,6 @@ profiles: {}
 
 def test_include_python_file_exception(temp_dir: Path, mocker):
     """Test exception handling when including malformed Python file."""
-    from toolbelt.config import loader
-    
     # Create a malformed Python file
     python_include = temp_dir / 'broken.py'
     python_include.write_text("""
@@ -568,7 +568,7 @@ profiles: {}
 """)
 
     config = load_yaml_config(main_config)
-    
+
     # Should still load the main config, skip the broken include
     assert config.variables['main_var'] == 'main_value'
     assert 'test_var' not in config.variables
@@ -613,11 +613,11 @@ profiles:
 """)
 
     config = load_yaml_config(main_config)
-    
+
     # Should have variables from both files
     assert config.variables['python_obj_var'] == 'from_toolbelt_config_object'
     assert config.variables['yaml_var'] == 'from_yaml'
-    
+
     # Should have profiles from both files
     assert 'python_obj_profile' in config.profiles
     assert 'yaml_profile' in config.profiles

@@ -127,7 +127,7 @@ def _run_tool_branch(
     # Decision 2: Check file handling mode
     if tool.file_handling_mode == 'per_file':
         return _run_tool_per_file_mode(ctx, variables)
-    
+
     if tool.file_handling_mode == 'batch':
         return _run_tool_batch_mode(ctx, variables)
 
@@ -154,7 +154,7 @@ def _run_tool_with_file_output_mode(
             advisory='No files found to process.',
         )
         return 0
-    
+
     return run_tool_with_file_output(ctx.tool, files_to_process, variables)
 
 
@@ -206,13 +206,12 @@ def _get_files_for_tool_execution(ctx: ToolBranchContext) -> list[Path]:
             ctx.global_exclude_patterns,
             verbose=ctx.verbose,
         )
-    else:
-        return get_target_files(
-            ctx.profile,
-            None,
-            ctx.global_exclude_patterns,
-            verbose=ctx.verbose,
-        )
+    return get_target_files(
+        ctx.profile,
+        None,
+        ctx.global_exclude_patterns,
+        verbose=ctx.verbose,
+    )
 
 
 def _run_tools_for_profile(
@@ -263,13 +262,27 @@ def _run_tools_for_profile(
         return 0
 
     use_file_mode = files is not None and len(files) > 0
-    target_files = _determine_target_files(files, profile, config, verbose, tool_type, tools)
-    
+    target_files = _determine_target_files(
+        files,
+        profile,
+        config,
+        verbose,
+        tool_type,
+        tools,
+    )
+
     if use_file_mode and target_files is None:
         # This means we had per-file tools but no valid files found
         return 0
 
-    return _execute_tools(tools, profile, config, use_file_mode, target_files, verbose)
+    return _execute_tools(
+        tools,
+        profile,
+        config,
+        use_file_mode,
+        target_files,
+        verbose,
+    )
 
 
 def _determine_target_files(
@@ -299,25 +312,24 @@ def _determine_target_files(
             provided_paths=[str(f) for f in files],
         )
         return files
-    else:
-        # Per-file mode - filter to existing files
-        tf_ctx = TargetFilesContext(
-            profile=profile,
-            files=files,
-            global_exclude_patterns=config.global_exclude_patterns,
-            verbose=verbose,
-            provided_files=[str(f) for f in files],
-            log_type='no_files',
-        )
-        target_files = _get_target_files_or_log(tf_ctx)
-        if not target_files:
-            return None
-        logger.info(
-            'checking' if tool_type == 'check' else 'formatting',
-            profile=profile.name,
-            file_count=len(target_files),
-        )
-        return target_files
+    # Per-file mode - filter to existing files
+    tf_ctx = TargetFilesContext(
+        profile=profile,
+        files=files,
+        global_exclude_patterns=config.global_exclude_patterns,
+        verbose=verbose,
+        provided_files=[str(f) for f in files],
+        log_type='no_files',
+    )
+    target_files = _get_target_files_or_log(tf_ctx)
+    if not target_files:
+        return None
+    logger.info(
+        'checking' if tool_type == 'check' else 'formatting',
+        profile=profile.name,
+        file_count=len(target_files),
+    )
+    return target_files
 
 
 def _execute_tools(

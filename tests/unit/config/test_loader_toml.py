@@ -4,7 +4,6 @@ from pathlib import Path
 import pytest
 from pytest_mock import MockerFixture
 
-import toolbelt.config.loader as loader_module
 from toolbelt.config.discovery import find_config_sources
 from toolbelt.config.file_loaders import load_pyproject_toml
 from toolbelt.config.includes import resolve_config_reference

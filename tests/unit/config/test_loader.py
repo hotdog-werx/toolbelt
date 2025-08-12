@@ -8,13 +8,13 @@ from pytest_mock import MockerFixture
 
 from toolbelt.config import ToolbeltConfig
 from toolbelt.config import loader as loader_mod
-from toolbelt.config.loader import (
-    load_config,
-)
 from toolbelt.config.file_loaders import (
     load_config_from_file,
     load_python_config,
     load_yaml_config,
+)
+from toolbelt.config.loader import (
+    load_config,
 )
 from toolbelt.config.models import get_tool_command
 

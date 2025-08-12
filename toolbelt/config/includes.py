@@ -1,8 +1,6 @@
 """Configuration file include processing and reference resolution."""
 
-import os
 from pathlib import Path
-from types import ModuleType
 from typing import Any
 
 import yaml
@@ -50,43 +48,45 @@ def resolve_config_reference(config_ref: str, base_path: Path) -> Path | None:
 
 
 def process_includes(
-    data: dict[str, Any], 
-    base_path: Path, 
-    processed_sources: set[str] | None = None
+    data: dict[str, Any],
+    base_path: Path,
+    processed_sources: set[str] | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
     """Process include statements in config data, resolving and merging included configs.
-    
+
     Args:
         data: Raw configuration data that may contain 'include' key.
         base_path: Base path for resolving relative includes.
         processed_sources: Set of already processed file paths to detect circular deps.
-        
+
     Returns:
         Tuple of (merged_data, sources_list) where merged_data has includes resolved
         and sources_list contains all processed file paths in order.
     """
     if processed_sources is None:
         processed_sources = set()
-    
+
     sources = []
-    
+
     # If no includes, return data as-is
     if 'include' not in data:
         return data, sources
-    
+
     includes = _normalize_includes_list(data['include'])
     merged_data = {k: v for k, v in data.items() if k != 'include'}
-    
+
     # Process each include
     for include_ref in includes:
         include_result = _process_single_include(
-            include_ref, base_path, processed_sources
+            include_ref,
+            base_path,
+            processed_sources,
         )
         if include_result:
             included_data, included_sources = include_result
             sources.extend(included_sources)
             merged_data = _merge_config_data(merged_data, included_data)
-    
+
     return merged_data, sources
 
 
@@ -98,12 +98,12 @@ def _normalize_includes_list(includes: Any) -> list[str]:
 
 
 def _process_single_include(
-    include_ref: str, 
-    base_path: Path, 
-    processed_sources: set[str]
+    include_ref: str,
+    base_path: Path,
+    processed_sources: set[str],
 ) -> tuple[dict[str, Any], list[str]] | None:
     """Process a single include reference and return the merged data and sources.
-    
+
     Returns:
         Tuple of (included_data, sources) on success, None on failure/skip.
     """
@@ -111,38 +111,38 @@ def _process_single_include(
     if not resolved_path:
         log.warning(f'Failed to resolve include reference: {include_ref}')
         return None
-        
+
     resolved_path_str = str(resolved_path)
-    
+
     # Check for circular dependency
     if resolved_path_str in processed_sources:
         log.warning(f'Circular dependency detected, skipping: {include_ref}')
         return None
-        
+
     # Check if file exists (for non-package resources)
     if not include_ref.startswith('@') and not resolved_path.exists():
         log.warning(f'Include file not found: {resolved_path}')
         return None
-        
+
     try:
         processed_sources.add(resolved_path_str)
         included_data = _load_include_file(resolved_path)
-        
+
         # Recursively process includes in the included file
         included_data, included_sources = process_includes(
-            included_data, 
-            resolved_path.parent, 
-            processed_sources.copy()
+            included_data,
+            resolved_path.parent,
+            processed_sources.copy(),
         )
-        
+
         sources = included_sources + [resolved_path_str]
         return included_data, sources
-        
+
     except Exception as e:
         log.warning(f'Failed to load include {include_ref}: {e}')
         return None
     finally:
-        # Remove from processed sources after processing to allow same file 
+        # Remove from processed sources after processing to allow same file
         # to be included in different branches
         processed_sources.discard(resolved_path_str)
 
@@ -162,9 +162,9 @@ def _load_include_file(resolved_path: Path) -> dict[str, Any]:
 def _load_python_include_file(resolved_path: Path) -> dict[str, Any]:
     """Load data from a Python include file."""
     # Import file_loaders functions here to avoid circular import
-    from .file_loaders import _load_python_module, _extract_config_from_module
+    from .file_loaders import _extract_config_from_module, _load_python_module
     from .models import ToolbeltConfig
-    
+
     module = _load_python_module(resolved_path)
     included_config_or_data = _extract_config_from_module(module)
     if isinstance(included_config_or_data, ToolbeltConfig):
@@ -172,18 +172,21 @@ def _load_python_include_file(resolved_path: Path) -> dict[str, Any]:
     return included_config_or_data
 
 
-def _merge_config_data(base_data: dict[str, Any], override_data: dict[str, Any]) -> dict[str, Any]:
+def _merge_config_data(
+    base_data: dict[str, Any],
+    override_data: dict[str, Any],
+) -> dict[str, Any]:
     """Merge two raw config data dictionaries.
-    
+
     Args:
         base_data: Base configuration data.
         override_data: Override configuration data.
-        
+
     Returns:
         Merged configuration data.
     """
     merged = base_data.copy()
-    
+
     for key, value in override_data.items():
         if key == 'profiles' and key in merged:
             # Merge profiles dict
@@ -201,5 +204,5 @@ def _merge_config_data(base_data: dict[str, Any], override_data: dict[str, Any])
         else:
             # Override other keys
             merged[key] = value
-    
+
     return merged
