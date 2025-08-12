@@ -1,4 +1,5 @@
 import os
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from pytest_mock import MockerFixture
 from toolbelt.runner.utils import expand_globs_in_args
 
 
-def normalize_paths(paths: list[Path]) -> list[str]:
+def normalize_paths(paths: Sequence[Path]) -> list[str]:
     return [os.path.normpath(str(p)) for p in paths]
 
 
@@ -152,4 +153,6 @@ def test_expand_globs_in_args_cases(
     )
     result = expand_globs_in_args(tcase.args)
     # Compare normalized paths for platform independence
-    assert normalize_paths(result) == normalize_paths(tcase.expected)
+    assert normalize_paths([Path(p) for p in result]) == normalize_paths(
+        [Path(p) for p in tcase.expected],
+    )
