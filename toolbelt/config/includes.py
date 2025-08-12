@@ -74,76 +74,102 @@ def process_includes(
     if 'include' not in data:
         return data, sources
     
-    includes = data['include']
-    if not isinstance(includes, list):
-        includes = [includes]
-    
-    # Start with base data (without the include key)
+    includes = _normalize_includes_list(data['include'])
     merged_data = {k: v for k, v in data.items() if k != 'include'}
     
     # Process each include
     for include_ref in includes:
-        resolved_path = resolve_config_reference(include_ref, base_path)
-        if not resolved_path:
-            log.warning(f'Failed to resolve include reference: {include_ref}')
-            continue
-            
-        resolved_path_str = str(resolved_path)
-        
-        # Check for circular dependency
-        if resolved_path_str in processed_sources:
-            log.warning(f'Circular dependency detected, skipping: {include_ref}')
-            continue
-            
-        # Check if file exists (for non-package resources)
-        if not include_ref.startswith('@') and not resolved_path.exists():
-            log.warning(f'Include file not found: {resolved_path}')
-            continue
-            
-        try:
-            # Load the included file
-            processed_sources.add(resolved_path_str)
-            
-            if resolved_path.suffix in ['.yaml', '.yml']:
-                with resolved_path.open('r') as f:
-                    included_data = yaml.safe_load(f)
-            elif resolved_path.suffix == '.py':
-                # Import file_loaders functions here to avoid circular import
-                from .file_loaders import _load_python_module, _extract_config_from_module
-                from .models import ToolbeltConfig
-                
-                module = _load_python_module(resolved_path)
-                included_config_or_data = _extract_config_from_module(module)
-                if isinstance(included_config_or_data, ToolbeltConfig):
-                    included_data = included_config_or_data.model_dump()
-                else:
-                    included_data = included_config_or_data
-            else:
-                log.warning(f'Unsupported include file type: {resolved_path.suffix}')
-                continue
-                
-            # Recursively process includes in the included file
-            included_data, included_sources = process_includes(
-                included_data, 
-                resolved_path.parent, 
-                processed_sources.copy()
-            )
-            
+        include_result = _process_single_include(
+            include_ref, base_path, processed_sources
+        )
+        if include_result:
+            included_data, included_sources = include_result
             sources.extend(included_sources)
-            sources.append(resolved_path_str)
-            
-            # Merge the included data with current data
             merged_data = _merge_config_data(merged_data, included_data)
-            
-        except Exception as e:
-            log.warning(f'Failed to load include {include_ref}: {e}')
-            continue
-        finally:
-            # Remove from processed sources after processing to allow same file 
-            # to be included in different branches
-            processed_sources.discard(resolved_path_str)
     
     return merged_data, sources
+
+
+def _normalize_includes_list(includes: Any) -> list[str]:
+    """Normalize includes to a list format."""
+    if not isinstance(includes, list):
+        return [includes]
+    return includes
+
+
+def _process_single_include(
+    include_ref: str, 
+    base_path: Path, 
+    processed_sources: set[str]
+) -> tuple[dict[str, Any], list[str]] | None:
+    """Process a single include reference and return the merged data and sources.
+    
+    Returns:
+        Tuple of (included_data, sources) on success, None on failure/skip.
+    """
+    resolved_path = resolve_config_reference(include_ref, base_path)
+    if not resolved_path:
+        log.warning(f'Failed to resolve include reference: {include_ref}')
+        return None
+        
+    resolved_path_str = str(resolved_path)
+    
+    # Check for circular dependency
+    if resolved_path_str in processed_sources:
+        log.warning(f'Circular dependency detected, skipping: {include_ref}')
+        return None
+        
+    # Check if file exists (for non-package resources)
+    if not include_ref.startswith('@') and not resolved_path.exists():
+        log.warning(f'Include file not found: {resolved_path}')
+        return None
+        
+    try:
+        processed_sources.add(resolved_path_str)
+        included_data = _load_include_file(resolved_path)
+        
+        # Recursively process includes in the included file
+        included_data, included_sources = process_includes(
+            included_data, 
+            resolved_path.parent, 
+            processed_sources.copy()
+        )
+        
+        sources = included_sources + [resolved_path_str]
+        return included_data, sources
+        
+    except Exception as e:
+        log.warning(f'Failed to load include {include_ref}: {e}')
+        return None
+    finally:
+        # Remove from processed sources after processing to allow same file 
+        # to be included in different branches
+        processed_sources.discard(resolved_path_str)
+
+
+def _load_include_file(resolved_path: Path) -> dict[str, Any]:
+    """Load data from an include file based on its extension."""
+    if resolved_path.suffix in ['.yaml', '.yml']:
+        with resolved_path.open('r') as f:
+            return yaml.safe_load(f)
+    elif resolved_path.suffix == '.py':
+        return _load_python_include_file(resolved_path)
+    else:
+        msg = f'Unsupported include file type: {resolved_path.suffix}'
+        raise ValueError(msg)
+
+
+def _load_python_include_file(resolved_path: Path) -> dict[str, Any]:
+    """Load data from a Python include file."""
+    # Import file_loaders functions here to avoid circular import
+    from .file_loaders import _load_python_module, _extract_config_from_module
+    from .models import ToolbeltConfig
+    
+    module = _load_python_module(resolved_path)
+    included_config_or_data = _extract_config_from_module(module)
+    if isinstance(included_config_or_data, ToolbeltConfig):
+        return included_config_or_data.model_dump()
+    return included_config_or_data
 
 
 def _merge_config_data(base_data: dict[str, Any], override_data: dict[str, Any]) -> dict[str, Any]:

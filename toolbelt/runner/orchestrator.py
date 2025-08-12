@@ -122,78 +122,14 @@ def _run_tool_branch(
 
     # Decision 1: Check if tool outputs to file (requires special handling)
     if tool.output_to_file:
-        # For output_to_file tools, we need to find files and process them individually
-        if ctx.use_file_mode and ctx.target_files:
-            files_to_process = get_target_files(
-                ctx.profile,
-                ctx.target_files,
-                ctx.global_exclude_patterns,
-                verbose=ctx.verbose,
-            )
-        else:
-            files_to_process = get_target_files(
-                ctx.profile,
-                None,
-                ctx.global_exclude_patterns,
-                verbose=ctx.verbose,
-            )
-
-        if not files_to_process:
-            logger.warning(
-                'no_files_found',
-                tool=tool.name,
-                profile=ctx.profile,
-                advisory='No files found to process.',
-            )
-            return 0
-
-        return run_tool_with_file_output(tool, files_to_process, variables)
+        return _run_tool_with_file_output_mode(ctx, variables)
 
     # Decision 2: Check file handling mode
     if tool.file_handling_mode == 'per_file':
-        # We find files and pass them to the tool all at once
-        if ctx.use_file_mode and ctx.target_files:
-            files_to_process = get_target_files(
-                ctx.profile,
-                ctx.target_files,
-                ctx.global_exclude_patterns,
-                verbose=ctx.verbose,
-            )
-        else:
-            files_to_process = get_target_files(
-                ctx.profile,
-                None,
-                ctx.global_exclude_patterns,
-                verbose=ctx.verbose,
-            )
-
-        if not files_to_process:
-            logger.warning(
-                'no_files_found',
-                tool=tool.name,
-                profile=ctx.profile,
-                advisory='No files found to process.',
-            )
-            return 0
-
-        return run_tool_per_file_mode(
-            tool,
-            files=files_to_process,
-            variables=variables,
-        )
-
+        return _run_tool_per_file_mode(ctx, variables)
+    
     if tool.file_handling_mode == 'batch':
-        # Tool handles its own file discovery, we pass provided files/dirs as targets
-        if ctx.use_file_mode and ctx.target_files:
-            targets = [str(f) for f in ctx.target_files]
-        else:
-            targets = [tool.default_target] if tool.default_target else ['.']
-
-        return run_tool_in_discovery_mode(
-            tool,
-            targets=targets,
-            variables=variables,
-        )
+        return _run_tool_batch_mode(ctx, variables)
 
     logger.error(
         'invalid_file_handling_mode',
@@ -202,6 +138,81 @@ def _run_tool_branch(
         supported_modes=['batch', 'per_file'],
     )
     return 1
+
+
+def _run_tool_with_file_output_mode(
+    ctx: ToolBranchContext,
+    variables: dict[str, str] | None = None,
+) -> int:
+    """Handle tool execution for tools that output to file."""
+    files_to_process = _get_files_for_tool_execution(ctx)
+    if not files_to_process:
+        logger.warning(
+            'no_files_found',
+            tool=ctx.tool.name,
+            profile=ctx.profile,
+            advisory='No files found to process.',
+        )
+        return 0
+    
+    return run_tool_with_file_output(ctx.tool, files_to_process, variables)
+
+
+def _run_tool_per_file_mode(
+    ctx: ToolBranchContext,
+    variables: dict[str, str] | None = None,
+) -> int:
+    """Handle tool execution for per-file mode tools."""
+    files_to_process = _get_files_for_tool_execution(ctx)
+    if not files_to_process:
+        logger.warning(
+            'no_files_found',
+            tool=ctx.tool.name,
+            profile=ctx.profile,
+            advisory='No files found to process.',
+        )
+        return 0
+
+    return run_tool_per_file_mode(
+        ctx.tool,
+        files=files_to_process,
+        variables=variables,
+    )
+
+
+def _run_tool_batch_mode(
+    ctx: ToolBranchContext,
+    variables: dict[str, str] | None = None,
+) -> int:
+    """Handle tool execution for batch mode tools."""
+    if ctx.use_file_mode and ctx.target_files:
+        targets = [str(f) for f in ctx.target_files]
+    else:
+        targets = [ctx.tool.default_target] if ctx.tool.default_target else ['.']
+
+    return run_tool_in_discovery_mode(
+        ctx.tool,
+        targets=targets,
+        variables=variables,
+    )
+
+
+def _get_files_for_tool_execution(ctx: ToolBranchContext) -> list[Path]:
+    """Get the appropriate files for tool execution based on context."""
+    if ctx.use_file_mode and ctx.target_files:
+        return get_target_files(
+            ctx.profile,
+            ctx.target_files,
+            ctx.global_exclude_patterns,
+            verbose=ctx.verbose,
+        )
+    else:
+        return get_target_files(
+            ctx.profile,
+            None,
+            ctx.global_exclude_patterns,
+            verbose=ctx.verbose,
+        )
 
 
 def _run_tools_for_profile(
@@ -252,52 +263,72 @@ def _run_tools_for_profile(
         return 0
 
     use_file_mode = files is not None and len(files) > 0
-    if files is not None and len(files) > 0:
-        # COMPLEX LOGIC: Handle mixed tool types when specific files are provided
-        #
-        # Batch tools: Can handle non-existent paths (e.g., "mypy src/" where src/
-        #              doesn't exist yet). Pass paths directly for tool to handle.
-        #
-        # Per-file tools: Need actual files (e.g., "black file1.py file2.py").
-        #                Must filter to existing files matching profile patterns.
-        #
-        # When profile has mixed tools, we need to handle both scenarios.
+    target_files = _determine_target_files(files, profile, config, verbose, tool_type, tools)
+    
+    if use_file_mode and target_files is None:
+        # This means we had per-file tools but no valid files found
+        return 0
 
-        # For batch tools, pass provided files directly without filtering
-        # For per_file tools, filter to existing files
-        has_batch_tools = any(tool.file_handling_mode == 'batch' for tool in tools)
+    return _execute_tools(tools, profile, config, use_file_mode, target_files, verbose)
 
-        if has_batch_tools:
-            # Pass provided files/paths directly - let the tool handle them
-            target_files = files
-            logger.info(
-                'checking' if tool_type == 'check' else 'formatting',
-                profile_name=profile.name,
-                provided_paths=[str(f) for f in files],
-            )
-        else:
-            # Per-file mode - filter to existing files
-            tf_ctx = TargetFilesContext(
-                profile=profile,
-                files=files,
-                global_exclude_patterns=config.global_exclude_patterns,
-                verbose=verbose,
-                provided_files=[str(f) for f in files],
-                log_type='no_files',
-            )
-            target_files = _get_target_files_or_log(tf_ctx)
-            if not target_files:
-                return 0
-            logger.info(
-                'checking' if tool_type == 'check' else 'formatting',
-                profile=profile.name,
-                file_count=len(target_files),
-            )
-    else:
+
+def _determine_target_files(
+    files: list[Path] | None,
+    profile,
+    config: ToolbeltConfig,
+    verbose: bool,
+    tool_type: str,
+    tools,
+) -> list[Path] | None:
+    """Determine the target files based on tool types and provided files."""
+    if files is None or len(files) == 0:
         # Discovery mode: No specific files provided
-        target_files = None
         logger.info('discovering', profile_name=profile.name)
+        return None
 
+    # COMPLEX LOGIC: Handle mixed tool types when specific files are provided
+    # Batch tools: Can handle non-existent paths, pass paths directly
+    # Per-file tools: Need actual files, filter to existing files
+    has_batch_tools = any(tool.file_handling_mode == 'batch' for tool in tools)
+
+    if has_batch_tools:
+        # Pass provided files/paths directly - let the tool handle them
+        logger.info(
+            'checking' if tool_type == 'check' else 'formatting',
+            profile_name=profile.name,
+            provided_paths=[str(f) for f in files],
+        )
+        return files
+    else:
+        # Per-file mode - filter to existing files
+        tf_ctx = TargetFilesContext(
+            profile=profile,
+            files=files,
+            global_exclude_patterns=config.global_exclude_patterns,
+            verbose=verbose,
+            provided_files=[str(f) for f in files],
+            log_type='no_files',
+        )
+        target_files = _get_target_files_or_log(tf_ctx)
+        if not target_files:
+            return None
+        logger.info(
+            'checking' if tool_type == 'check' else 'formatting',
+            profile=profile.name,
+            file_count=len(target_files),
+        )
+        return target_files
+
+
+def _execute_tools(
+    tools,
+    profile,
+    config: ToolbeltConfig,
+    use_file_mode: bool,
+    target_files: list[Path] | None,
+    verbose: bool,
+) -> int:
+    """Execute all tools and return the final exit code."""
     exit_code = 0
     for tool in tools:
         branch_ctx = ToolBranchContext(
