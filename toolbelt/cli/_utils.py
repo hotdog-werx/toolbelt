@@ -4,7 +4,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from toolbelt.config.loader import find_config_sources
+from toolbelt.config.discovery import find_config_sources
 
 console = Console()
 

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from toolbelt.config.loader import load_yaml_config, load_python_config
+from toolbelt.config.file_loaders import load_yaml_config, load_python_config
 
 
 def test_basic_include(temp_dir: Path):
@@ -430,10 +430,10 @@ config = {
 
 def test_include_resolution_fails(temp_dir: Path, mocker):
     """Test include with resolution failure (covers lines 369-370)."""
-    from toolbelt.config import loader
+    from toolbelt.config import includes
     
     # Mock resolve_config_reference to return None
-    mock_resolve = mocker.patch.object(loader, 'resolve_config_reference', return_value=None)
+    mock_resolve = mocker.patch.object(includes, 'resolve_config_reference', return_value=None)
     
     main_config = temp_dir / 'main.yaml'
     main_config.write_text("""

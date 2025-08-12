@@ -5,11 +5,9 @@ import pytest
 from pytest_mock import MockerFixture
 
 import toolbelt.config.loader as loader_module
-from toolbelt.config.loader import (
-    find_config_sources,
-    load_pyproject_toml,
-    resolve_config_reference,
-)
+from toolbelt.config.discovery import find_config_sources
+from toolbelt.config.file_loaders import load_pyproject_toml
+from toolbelt.config.includes import resolve_config_reference
 
 
 @dataclass
@@ -130,7 +128,7 @@ def test_resolve_config_reference(
 ) -> None:
     """Test resolving configuration references to absolute paths."""
     if tcase.config_ref.startswith('@'):
-        mock = mocker.patch.object(loader_module, 'resolve_package_resource')
+        mock = mocker.patch('toolbelt.config.includes.resolve_package_resource')
         if isinstance(tcase.resolve_package_resource_side_effect, Path):
             mock.return_value = tcase.resolve_package_resource_side_effect
         else:
