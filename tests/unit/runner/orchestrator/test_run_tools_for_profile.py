@@ -396,8 +396,8 @@ def test_run_tools_for_profile_mixed_tool_types_batch_priority(
     tools_profile_mocks['get_target_files_or_log'].assert_not_called()
 
     # Should log with provided_paths (batch mode)
-    tools_profile_mocks['logger'].info.assert_called_once()
-    log_call = tools_profile_mocks['logger'].info.call_args
+    tools_profile_mocks['logger'].debug.assert_called_once()
+    log_call = tools_profile_mocks['logger'].debug.call_args
     assert log_call[0][0] == 'checking'
     assert 'provided_paths' in log_call[1]
 
@@ -441,7 +441,7 @@ def test_run_tools_for_profile_per_file_only_filters_files(
     tools_profile_mocks['get_target_files_or_log'].assert_called_once()
 
     # Should log with file_count (per_file mode)
-    tools_profile_mocks['logger'].info.assert_called_once()
-    log_call = tools_profile_mocks['logger'].info.call_args
+    tools_profile_mocks['logger'].debug.assert_called_once()
+    log_call = tools_profile_mocks['logger'].debug.call_args
     assert log_call[0][0] == 'checking'
     assert 'file_count' in log_call[1]

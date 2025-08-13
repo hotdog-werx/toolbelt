@@ -35,7 +35,11 @@ profiles:
         description: "Python formatter with 80-char line length"
       - name: "add-trailing-comma"
         command: "uvx"
-        args: ["add-trailing-comma@latest", "--exit-zero-even-if-changed"]
+        args:
+          [
+            "add-trailing-comma@${TB_ADD_TRAILING_COMMA_VERSION:latest}",
+            "--exit-zero-even-if-changed",
+          ]
         file_handling_mode: "per_file"
         description: "Add trailing commas to Python code"
       - name: "ruff-format-120"

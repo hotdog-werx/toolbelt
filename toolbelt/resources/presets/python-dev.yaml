@@ -8,7 +8,12 @@ profiles:
     check_tools:
       - name: "complexity"
         command: "uvx"
-        args: ["complexipy@latest", "-mx", "10"]
+        args:
+          [
+            "complexipy@${TB_COMPLEXIPY_VERSION:latest}",
+            "-mx",
+            "${TB_COMPLEXIPY_THRESHOLD:10}",
+          ]
         file_handling_mode: "batch"
         default_target: "."
         description: "Python complexity checker"

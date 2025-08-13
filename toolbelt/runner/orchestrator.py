@@ -343,7 +343,7 @@ def _determine_target_files(
     """Determine the target files based on tool types and provided files."""
     if ctx.files is None or len(ctx.files) == 0:
         # Discovery mode: No specific files provided
-        logger.info('discovering', profile_name=ctx.profile.name)
+        logger.debug('discovering', profile_name=ctx.profile.name)
         return None
 
     # COMPLEX LOGIC: Handle mixed tool types when specific files are provided
@@ -353,7 +353,7 @@ def _determine_target_files(
 
     if has_batch_tools:
         # Pass provided files/paths directly - let the tool handle them
-        logger.info(
+        logger.debug(
             'checking' if ctx.tool_type == 'check' else 'formatting',
             profile_name=ctx.profile.name,
             provided_paths=[str(f) for f in ctx.files],
@@ -371,7 +371,7 @@ def _determine_target_files(
     target_files = _get_target_files_or_log(tf_ctx)
     if not target_files:
         return None
-    logger.info(
+    logger.debug(
         'checking' if ctx.tool_type == 'check' else 'formatting',
         profile=ctx.profile.name,
         file_count=len(target_files),
