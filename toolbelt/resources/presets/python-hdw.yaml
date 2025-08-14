@@ -1,0 +1,62 @@
+# Hotdog-werx Opinionated Python Style
+#
+# This preset implements hotdog-werx's specific Python formatting philosophy:
+# 1. Format with 80-char line length first (creates consistent short lines)
+# 2. Add trailing commas strategically (only where they improve readability/diffs)
+# 3. Re-format with default settings (cleans up any inconsistencies)
+# 4. Auto-fix linting issues (imports, unused vars, etc.)
+# 5. Final formatting pass (ensures everything is perfectly clean)
+#
+# This approach creates very clean, consistent code with strategic trailing commas
+# that make diffs more readable without being overly rigid.
+
+profiles:
+  python:
+    extensions: [".py"]
+    check_tools:
+      - name: "ruff-check"
+        command: "uvx"
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "check"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Fast Python linter"
+      - name: ruff-format-check
+        command: uvx
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "format", "--check"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Check Python formatting with Ruff"
+    format_tools:
+      - name: "ruff-format-80"
+        command: "uvx"
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "format", "--line-length=80"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Python formatter with 80-char line length"
+      - name: "add-trailing-comma"
+        command: "uvx"
+        args:
+          [
+            "add-trailing-comma@${TB_ADD_TRAILING_COMMA_VERSION:latest}",
+            "--exit-zero-even-if-changed",
+          ]
+        file_handling_mode: "per_file"
+        description: "Add trailing commas to Python code"
+      - name: "ruff-format-120"
+        command: "uvx"
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "format"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Python formatter with default line length"
+      - name: "ruff-check-fix"
+        command: "uvx"
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "check", "--fix", "--fix-only"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Auto-fix Python issues with Ruff"
+      - name: "ruff-format"
+        command: "uvx"
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "format"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Final Python formatting pass"

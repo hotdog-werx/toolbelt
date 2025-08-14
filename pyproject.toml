@@ -39,6 +39,9 @@ include = ["configs/tasks.toml"]
 
 [tool.ruff]
 extend = "configs/ruff.toml"
+exclude = [
+  "tests/**/fixtures/**",  # Exclude test fixture resources from linting
+]
 
 [tool.pyright]
 typeCheckingMode = "standard"
@@ -46,3 +49,6 @@ typeCheckingMode = "standard"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.toolbelt]
+include = ["@toolbelt:resources/presets/hdw.yaml", "toolbelt.yaml"]

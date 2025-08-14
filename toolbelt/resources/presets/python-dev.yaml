@@ -1,0 +1,37 @@
+include:
+  - "@toolbelt:resources/presets/python-typed.yaml"
+
+profiles:
+  complexity:
+    extensions: [".py"]
+    format_tools: []
+    check_tools:
+      - name: "complexity"
+        command: "uvx"
+        args:
+          [
+            "complexipy@${TB_COMPLEXIPY_VERSION:latest}",
+            "-mx",
+            "${TB_COMPLEXIPY_THRESHOLD:10}",
+          ]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Python complexity checker"
+
+  coverage:
+    extensions: [".py"]
+    format_tools: []
+    check_tools:
+      - name: "coverage"
+        description: "Run tests with coverage"
+        command: "pytest"
+        args:
+          [
+            "-v",
+            "--tb=short",
+            "--cov=${TB_PROJECT_SOURCE:src}",
+            "--cov-report=term-missing",
+            "--cov-report=html:.coverage-files/htmlcov",
+          ]
+        file_handling_mode: "batch"
+        default_target: "${TB_COVERAGE_TARGET:tests}"

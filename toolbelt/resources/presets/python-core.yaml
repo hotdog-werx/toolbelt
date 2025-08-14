@@ -1,0 +1,29 @@
+profiles:
+  python:
+    extensions: [".py"]
+    check_tools:
+      - name: "ruff-check"
+        command: "uvx"
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "check"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Fast Python linter"
+      - name: ruff-format-check
+        command: uvx
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "format", "--check"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Check Python formatting with Ruff"
+    format_tools:
+      - name: "ruff-format"
+        command: "uvx"
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "format"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Fast Python formatter"
+      - name: "ruff-check-fix"
+        command: "uvx"
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "check", "--fix", "--fix-only"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Auto-fix Python issues with Ruff"

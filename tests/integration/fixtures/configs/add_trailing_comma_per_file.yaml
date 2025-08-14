@@ -1,0 +1,19 @@
+# Configuration for testing add-trailing-comma (per_file tool)
+# Pinned version to ensure deterministic behavior in tests.
+# NOTE: Keep in sync with test expectations when upgrading.
+global_exclude_patterns:
+  - "**/__pycache__/**"
+  - "*.pyc"
+
+profiles:
+  python:
+    name: python
+    extensions:
+      - ".py"
+    check_tools: []
+    format_tools:
+      - name: "add-trailing-comma"
+        command: "uvx"
+        args: ["add-trailing-comma@3.2.0", "--exit-zero-even-if-changed"]
+        file_handling_mode: "per_file"
+        description: "Add trailing commas (per-file mode, pinned version)"

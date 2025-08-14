@@ -1,0 +1,11 @@
+include:
+  - "@toolbelt:resources/presets/python-typed.yaml"
+  - "@toolbelt:resources/presets/web.yaml"
+
+exclude_patterns:
+  - ".git/**"
+  - "**/__pycache__/**"
+  - ".venv/**"
+  - "node_modules/**"
+  - "dist/**"
+  - "build/**"
