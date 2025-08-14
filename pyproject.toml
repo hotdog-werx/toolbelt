@@ -39,6 +39,9 @@ include = ["configs/tasks.toml"]
 
 [tool.ruff]
 extend = "configs/ruff.toml"
+exclude = [
+  "tests/**/fixtures/**",  # Exclude test fixture resources from linting
+]
 
 [tool.pyright]
 typeCheckingMode = "standard"

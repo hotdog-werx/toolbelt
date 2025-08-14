@@ -1,7 +1,10 @@
-"""Simple test to verify integration test setup."""
+from collections.abc import Callable
+from pathlib import Path
+
+from .conftest import RunToolbeltCLI
 
 
-def test_fixture_files_exist(fixture_files_dir):
+def test_fixture_files_exist(fixture_files_dir: Path) -> None:
     """Verify all fixture files are present."""
     expected_files = [
         'bad_python_for_ruff.py',
@@ -15,7 +18,7 @@ def test_fixture_files_exist(fixture_files_dir):
         assert file_path.stat().st_size > 0, f'Fixture file {filename} is empty'
 
 
-def test_fixture_configs_exist(fixture_configs_dir):
+def test_fixture_configs_exist(fixture_configs_dir: Path) -> None:
     """Verify all fixture configs are present."""
     expected_configs = [
         'ruff_batch.yaml',
@@ -29,7 +32,11 @@ def test_fixture_configs_exist(fixture_configs_dir):
         assert config_path.stat().st_size > 0, f'Fixture config {config_name} is empty'
 
 
-def test_copy_fixtures(tmp_path, copy_fixture_file, copy_fixture_config):
+def test_copy_fixtures(
+    tmp_path: Path,
+    copy_fixture_file: Callable[[str, Path], Path],
+    copy_fixture_config: Callable[[str, Path], Path],
+) -> None:
     """Test that fixture copying works."""
     # Copy a config
     config_path = copy_fixture_config('ruff_batch.yaml', tmp_path)
@@ -42,7 +49,10 @@ def test_copy_fixtures(tmp_path, copy_fixture_file, copy_fixture_config):
     assert file_path.name == 'bad_python_for_ruff.py'
 
 
-def test_setup_test_environment(tmp_path, setup_test_environment):
+def test_setup_test_environment(
+    tmp_path: Path,
+    setup_test_environment: Callable[[str, list[str]], tuple[Path, list[Path]]],
+) -> None:
     """Test that complete environment setup works."""
     config_path, file_paths = setup_test_environment(
         'ruff_batch.yaml',
@@ -54,7 +64,7 @@ def test_setup_test_environment(tmp_path, setup_test_environment):
     assert file_paths[0].exists()
 
 
-def test_run_toolbelt_help(run_toolbelt_cli):
+def test_run_toolbelt_help(run_toolbelt_cli: RunToolbeltCLI) -> None:
     """Test that we can run toolbelt CLI."""
     result = run_toolbelt_cli(['--help'])
 

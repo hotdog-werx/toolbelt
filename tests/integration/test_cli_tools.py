@@ -8,9 +8,18 @@ These tests verify that toolbelt correctly handles:
 Tests use fixture files with intentional issues to verify tool behavior.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING:  # moved to type-checking block per TC00x
+    from collections.abc import Callable
+    from pathlib import Path
+
+    from .conftest import RunToolbeltCLI
 
 
 @dataclass
@@ -25,7 +34,8 @@ class ToolTestCase:
     expected_output_fragments: list[str] | None = None
     expected_file_changes: dict[str, str] | None = None  # filename -> expected content fragment
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        """Post-initialization to normalize optional mutable defaults."""
         if self.expected_output_fragments is None:
             self.expected_output_fragments = []
         if self.expected_file_changes is None:
@@ -67,10 +77,10 @@ class ToolTestCase:
 )
 def test_tool_integration(
     test_case: ToolTestCase,
-    tmp_path,
-    setup_test_environment,
-    run_toolbelt_cli,
-):
+    tmp_path: Path,
+    setup_test_environment: Callable[[str, list[str]], tuple[Path, list[Path]]],
+    run_toolbelt_cli: RunToolbeltCLI,
+) -> None:
     """Test different tool types work correctly through the CLI."""
     # Set up test environment
     config_path, file_paths = setup_test_environment(
@@ -79,7 +89,7 @@ def test_tool_integration(
     )
 
     # Store original file contents for comparison
-    original_contents = {}
+    original_contents: dict[str, str] = {}
     for file_path in file_paths:
         original_contents[file_path.name] = file_path.read_text()
 
@@ -122,7 +132,7 @@ def test_tool_integration(
                 )
 
 
-def test_toolbelt_help_command(run_toolbelt_cli):
+def test_toolbelt_help_command(run_toolbelt_cli: RunToolbeltCLI) -> None:
     """Test that toolbelt --help works."""
     result = run_toolbelt_cli(['--help'])
 
@@ -133,10 +143,10 @@ def test_toolbelt_help_command(run_toolbelt_cli):
 
 
 def test_toolbelt_list_command(
-    tmp_path,
-    setup_test_environment,
-    run_toolbelt_cli,
-):
+    tmp_path: Path,
+    setup_test_environment: Callable[[str, list[str]], tuple[Path, list[Path]]],
+    run_toolbelt_cli: RunToolbeltCLI,
+) -> None:
     """Test that toolbelt list shows configured profiles."""
     # Set up with any config
     config_path, _ = setup_test_environment('ruff_batch.yaml', [])
@@ -147,7 +157,11 @@ def test_toolbelt_list_command(
     assert 'python' in result.stdout
 
 
-def test_invalid_profile(tmp_path, setup_test_environment, run_toolbelt_cli):
+def test_invalid_profile(
+    tmp_path: Path,
+    setup_test_environment: Callable[[str, list[str]], tuple[Path, list[Path]]],
+    run_toolbelt_cli: RunToolbeltCLI,
+) -> None:
     """Test error handling with invalid profile."""
     config_path, _ = setup_test_environment('ruff_batch.yaml', [])
 
@@ -158,7 +172,11 @@ def test_invalid_profile(tmp_path, setup_test_environment, run_toolbelt_cli):
     assert 'invalid_profile' in output.lower()
 
 
-def test_no_files_found(tmp_path, setup_test_environment, run_toolbelt_cli):
+def test_no_files_found(
+    tmp_path: Path,
+    setup_test_environment: Callable[[str, list[str]], tuple[Path, list[Path]]],
+    run_toolbelt_cli: RunToolbeltCLI,
+) -> None:
     """Test behavior when no matching files are found."""
     config_path, _ = setup_test_environment('ruff_batch.yaml', [])
 
@@ -169,7 +187,11 @@ def test_no_files_found(tmp_path, setup_test_environment, run_toolbelt_cli):
     assert result.returncode in [0, 1, 2]
 
 
-def test_verbose_output(tmp_path, setup_test_environment, run_toolbelt_cli):
+def test_verbose_output(
+    tmp_path: Path,
+    setup_test_environment: Callable[[str, list[str]], tuple[Path, list[Path]]],
+    run_toolbelt_cli: RunToolbeltCLI,
+) -> None:
     """Test that verbose flag provides more detailed output."""
     config_path, file_paths = setup_test_environment(
         'ruff_batch.yaml',
@@ -193,10 +215,10 @@ def test_verbose_output(tmp_path, setup_test_environment, run_toolbelt_cli):
 
 
 def test_specific_file_targeting(
-    tmp_path,
-    setup_test_environment,
-    run_toolbelt_cli,
-):
+    tmp_path: Path,
+    setup_test_environment: Callable[[str, list[str]], tuple[Path, list[Path]]],
+    run_toolbelt_cli: RunToolbeltCLI,
+) -> None:
     """Test running tools on specific files rather than discovery mode."""
     config_path, file_paths = setup_test_environment(
         'ruff_batch.yaml',
@@ -217,14 +239,14 @@ def test_specific_file_targeting(
 
 
 def test_multiple_files(
-    tmp_path,
-    copy_fixture_config,
-    copy_fixture_file,
-    run_toolbelt_cli,
-):
+    tmp_path: Path,
+    copy_fixture_config: Callable[[str, Path], Path],
+    copy_fixture_file: Callable[[str, Path], Path],
+    run_toolbelt_cli: RunToolbeltCLI,
+) -> None:
     """Test running tools on multiple files."""
     # Set up multiple Python files
-    config_path = copy_fixture_config('ruff_batch.yaml', tmp_path)
+    copy_fixture_config('ruff_batch.yaml', tmp_path)
     file1 = copy_fixture_file('bad_python_for_ruff.py', tmp_path)
     file2 = copy_fixture_file('needs_trailing_comma.py', tmp_path)
 
