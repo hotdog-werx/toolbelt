@@ -1,0 +1,17 @@
+# Configuration for testing sed (write_to_file tool)
+global_exclude_patterns:
+  - "**/__pycache__/**"
+  - "*.pyc"
+
+profiles:
+  text:
+    name: text
+    extensions:
+      - ".txt"
+    check_tools: []
+    format_tools:
+      - name: "sed-replace"
+        command: "sed"
+        args: ["-i", "s/old/new/g"]
+        file_handling_mode: "per_file"
+        description: "Replace text with sed (per-file mode)"

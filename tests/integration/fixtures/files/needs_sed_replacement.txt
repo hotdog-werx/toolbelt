@@ -1,0 +1,5 @@
+This is a test file with old text.
+The old pattern should be replaced.
+Here is another instance of old text.
+This old value needs to be changed to new.
+Some old content at the end.

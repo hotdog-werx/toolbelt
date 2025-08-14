@@ -1,0 +1,18 @@
+# Configuration for testing ruff (batch tool)
+global_exclude_patterns:
+  - "**/__pycache__/**"
+  - "*.pyc"
+
+profiles:
+  python:
+    name: python
+    extensions:
+      - ".py"
+    check_tools:
+      - name: "ruff-check"
+        command: "uvx"
+        args: ["ruff@latest", "check"]
+        file_handling_mode: "batch"
+        default_target: "."
+        description: "Python linter (batch mode)"
+    format_tools: []
