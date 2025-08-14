@@ -1,4 +1,11 @@
-# Configuration for testing sed (write_to_file tool)
+# Configuration for testing cross-platform text replacement (per_file tool)
+# Replaces previous sed-based implementation (BSD/GNU differences, absent on Windows).
+# Uses Python so it works uniformly on all CI runners.
+#
+# The script replaces occurrences of 'old' with 'new' in each target file.
+#
+# NOTE: Keep test expectations in sync if modifying replacement logic.
+
 global_exclude_patterns:
   - "**/__pycache__/**"
   - "*.pyc"
@@ -10,8 +17,14 @@ profiles:
       - ".txt"
     check_tools: []
     format_tools:
-      - name: "sed-replace"
-        command: "sed"
-        args: ["-i", "s/old/new/g"]
+      - name: "text-replace"
+        command: "python"
+        args:
+          - "-c"
+          - |
+            import pathlib, sys
+            for p in sys.argv[1:]:
+                path = pathlib.Path(p)
+                path.write_text(path.read_text().replace("old", "new"))
         file_handling_mode: "per_file"
-        description: "Replace text with sed (per-file mode)"
+        description: "Replace text using Python (cross-platform)"

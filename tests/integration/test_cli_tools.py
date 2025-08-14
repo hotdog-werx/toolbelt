@@ -64,7 +64,7 @@ class ToolTestCase:
             },
         ),
         ToolTestCase(
-            name='sed_per_file',
+            name='text_replace_per_file',
             config_file='sed_write_to_file.yaml',
             test_files=['needs_sed_replacement.txt'],
             command_args=['format', 'text'],
