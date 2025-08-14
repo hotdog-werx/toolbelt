@@ -22,10 +22,10 @@ jobs:
       - name: dependencies
         run: uvx --from poethepoet poe uv-sync
       - name: coverage
-        run: tb check python
+        run: uv run tb check python
       - name: tests
-        run: tb check coverage
+        run: uv run tb check coverage
       - name: complexity
-        run: tb check complexity
+        run: uv run tb check complexity
       - name: basedpyright
-        run: tb check basedpyright
+        run: uv run tb check basedpyright
