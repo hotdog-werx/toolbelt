@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
@@ -81,7 +82,8 @@ def run_toolbelt_cli() -> RunToolbeltCLI:
         cwd: Path | None = None,
     ) -> subprocess.CompletedProcess[str]:
         # The arguments are controlled in tests; safe for subprocess execution.
-        cmd = ['python', '-m', 'toolbelt.cli.main', *args]
+        # Use the current interpreter to ensure the installed package is found (esp. on Windows CI)
+        cmd = [sys.executable, '-m', 'toolbelt.cli.main', *args]
         return subprocess.run(  # noqa: S603 - Controlled test harness command
             cmd,
             cwd=cwd,
