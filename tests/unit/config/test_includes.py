@@ -112,7 +112,7 @@ profiles: {}
 
     # Should have both original and new variables
     assert config.variables['my_var'] == 'my_value'
-    assert 'TB_RUFF_VERSION' in config.variables
+    # no variables included from the preset
 
     # Check sources include the package resource
     expected_resource = Path('resources/presets/hdw.yaml')

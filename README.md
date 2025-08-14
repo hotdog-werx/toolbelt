@@ -2,6 +2,8 @@
 
 Format or run checks on files by running tools on them
 
+> NOTE: This is a work in progress. Documentation is being updated to reflect the latest changes.
+
 ## What Makes Toolbelt Natural
 
 Toolbelt abstracts away the complexity of different tool behaviors into a unified interface. Once a tool is configured, developers don't need to remember:

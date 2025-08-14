@@ -11,6 +11,3 @@ exclude_patterns:
   - "node_modules/**"
   - "dist/**"
   - "build/**"
-
-variables:
-  TB_PROJECT_SOURCE: toolbelt

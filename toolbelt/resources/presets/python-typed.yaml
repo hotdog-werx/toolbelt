@@ -8,10 +8,7 @@ profiles:
     check_tools:
       - name: "basedpyright"
         command: "uvx"
-        args: ["basedpyright@${TB_BASEDPYRIGHT_VERSION}"]
+        args: ["basedpyright@${TB_BASEDPYRIGHT_VERSION:latest}"]
         file_handling_mode: "batch"
         default_target: "."
         description: "BasedPyright type checker"
-
-variables:
-  TB_BASEDPYRIGHT_VERSION: latest

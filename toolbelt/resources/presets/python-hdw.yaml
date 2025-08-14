@@ -16,20 +16,20 @@ profiles:
     check_tools:
       - name: "ruff-check"
         command: "uvx"
-        args: ["ruff@${TB_RUFF_VERSION}", "check"]
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "check"]
         file_handling_mode: "batch"
         default_target: "."
         description: "Fast Python linter"
       - name: ruff-format-check
         command: uvx
-        args: ["ruff@${TB_RUFF_VERSION}", "format", "--check"]
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "format", "--check"]
         file_handling_mode: "batch"
         default_target: "."
         description: "Check Python formatting with Ruff"
     format_tools:
       - name: "ruff-format-80"
         command: "uvx"
-        args: ["ruff@${TB_RUFF_VERSION}", "format", "--line-length=80"]
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "format", "--line-length=80"]
         file_handling_mode: "batch"
         default_target: "."
         description: "Python formatter with 80-char line length"
@@ -44,22 +44,19 @@ profiles:
         description: "Add trailing commas to Python code"
       - name: "ruff-format-120"
         command: "uvx"
-        args: ["ruff@${TB_RUFF_VERSION}", "format"]
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "format"]
         file_handling_mode: "batch"
         default_target: "."
         description: "Python formatter with default line length"
       - name: "ruff-check-fix"
         command: "uvx"
-        args: ["ruff@${TB_RUFF_VERSION}", "check", "--fix", "--fix-only"]
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "check", "--fix", "--fix-only"]
         file_handling_mode: "batch"
         default_target: "."
         description: "Auto-fix Python issues with Ruff"
       - name: "ruff-format"
         command: "uvx"
-        args: ["ruff@${TB_RUFF_VERSION}", "format"]
+        args: ["ruff@${TB_RUFF_VERSION:latest}", "format"]
         file_handling_mode: "batch"
         default_target: "."
         description: "Final Python formatting pass"
-
-variables:
-  TB_RUFF_VERSION: latest
