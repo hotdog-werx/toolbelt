@@ -1,0 +1,12 @@
+# Normalize line endings for all text files
+* text=auto eol=lf
+
+# Declare files that should not be normalized
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binarytests

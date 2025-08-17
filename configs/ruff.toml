@@ -42,15 +42,7 @@ max-complexity = 7
   "PT004",  # Allow none-returning fixtures to not lead with underscore due to pyright conflict
   "S101",   # Please sir may I use assert in my tests?
 ]
-"**/conftest.py" = [
-  "ANN201",
-  "ARG001",
-  "D101",
-  "D102",
-  "D103",
-  "PT004",
-  "S101",
-]
+"**/conftest.py" = ["ANN201", "ARG001", "D101", "D102", "D103", "PT004", "S101"]
 
 [lint.pydocstyle]
 convention = "google"

@@ -236,7 +236,8 @@ def _run_tool_batch_mode(
     if ctx.use_file_mode and ctx.target_files:
         targets = [str(f) for f in ctx.target_files]
     else:
-        targets = [ctx.tool.default_target] if ctx.tool.default_target else ['.']
+        # Use default_target if specified, otherwise let tool auto-discover
+        targets = [ctx.tool.default_target] if ctx.tool.default_target else []
 
     return run_tool_in_discovery_mode(
         ctx.tool,

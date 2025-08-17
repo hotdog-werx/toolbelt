@@ -350,7 +350,7 @@ def test_run_tool_branch_batch_mode_default_target(
 def test_run_tool_branch_batch_mode_no_default_target(
     tool_branch_mocks: ToolBranchMocks,
 ):
-    """Test that batch mode uses '.' when no default_target and in discovery mode."""
+    """Test that batch mode uses empty targets when no default_target (allows auto-discovery)."""
     tool = ToolConfig(
         name='test-tool',
         command='tool',
@@ -364,6 +364,6 @@ def test_run_tool_branch_batch_mode_no_default_target(
 
     tool_branch_mocks['run_tool_in_discovery_mode'].assert_called_once_with(
         tool,
-        targets=['.'],
+        targets=[],
         variables=None,
     )

@@ -1,10 +1,10 @@
 profiles:
   yaml:
-    extensions: [".yaml", ".yml"]
+    extensions: ['.yaml', '.yml']
     check_tools: []
     format_tools:
-      - name: "yq-format"
-        command: "yq"
-        args: ["eval", "."]
+      - name: 'yq-format'
+        command: 'yq'
+        args: ['eval', '.']
         output_to_file: true
-        description: "YAML formatter using yq"
+        description: 'YAML formatter using yq'

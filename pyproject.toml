@@ -8,11 +8,11 @@ requires-python = ">=3.11"
 dynamic = ["version"]
 
 dependencies = [
-    "pydantic>=2.11.7, <3",
-    "pyyaml>=6.0, <7",
-    "pathspec>=0.12.0, <1",
-    "structlog>=25.4.0, <26",
-    "rich>=14.0.0, <15",
+  "pydantic>=2.11.7, <3",
+  "pyyaml>=6.0, <7",
+  "pathspec>=0.12.0, <1",
+  "structlog>=25.4.0, <26",
+  "rich>=14.0.0, <15",
 ]
 
 [project.scripts]
@@ -21,11 +21,7 @@ tbelt = "toolbelt.cli.main:main"
 toolbelt = "toolbelt.cli.main:main"
 
 [dependency-groups]
-dev = [
-    "pytest>=8.0.0",
-    "pytest-mock>=3.12.0",
-    "pytest-cov>=4.0.0",
-]
+dev = ["pytest>=8.0.0", "pytest-mock>=3.12.0", "pytest-cov>=4.0.0"]
 
 [tool.hatch]
 build.packages = ["toolbelt"]
@@ -40,7 +36,7 @@ include = ["configs/tasks.toml"]
 [tool.ruff]
 extend = "configs/ruff.toml"
 exclude = [
-  "tests/**/fixtures/**",  # Exclude test fixture resources from linting
+  "tests/**/fixtures/**", # Exclude test fixture resources from linting
 ]
 
 [tool.pyright]
