@@ -1,37 +1,55 @@
 include:
-  - "@toolbelt:resources/presets/python-typed.yaml"
+  - '@toolbelt:resources/presets/python-typed.yaml'
 
 profiles:
   complexity:
-    extensions: [".py"]
+    extensions: ['.py']
     format_tools: []
     check_tools:
-      - name: "complexity"
-        command: "uvx"
+      - name: 'complexity'
+        command: 'uvx'
         args:
           [
-            "complexipy@${TB_COMPLEXIPY_VERSION:latest}",
-            "-mx",
-            "${TB_COMPLEXIPY_THRESHOLD:10}",
+            'complexipy@${TB_COMPLEXIPY_VERSION:latest}',
+            '-mx',
+            '${TB_COMPLEXIPY_THRESHOLD:10}',
           ]
-        file_handling_mode: "batch"
-        default_target: "."
-        description: "Python complexity checker"
+        file_handling_mode: 'batch'
+        default_target: '.'
+        description: 'Python complexity checker'
 
   coverage:
-    extensions: [".py"]
+    extensions: ['.py']
     format_tools: []
     check_tools:
-      - name: "coverage"
-        description: "Run tests with coverage"
-        command: "pytest"
+      - name: 'coverage'
+        description: 'Run tests with coverage'
+        command: 'pytest'
         args:
           [
-            "-v",
-            "--tb=short",
-            "--cov=${TB_PROJECT_SOURCE:src}",
-            "--cov-report=term-missing",
-            "--cov-report=html:.coverage-files/htmlcov",
+            '-v',
+            '--tb=short',
+            '--cov=${TB_PROJECT_SOURCE:src}',
+            '--cov-report=term-missing',
+            '--cov-report=html:.coverage-files/htmlcov',
+            '${TB_COVERAGE_EXTRA_ARGS:}',
           ]
-        file_handling_mode: "batch"
-        default_target: "${TB_COVERAGE_TARGET:tests}"
+        file_handling_mode: 'batch'
+        default_target: '${TB_COVERAGE_TARGET:tests}'
+
+  toml:
+    extensions: ['.toml']
+    check_tools:
+      - name: 'taplo-lint'
+        command: 'taplo'
+        args: ['lint', '--colors', 'always']
+        file_handling_mode: 'batch'
+        default_target: ''
+        description: 'TOML syntax and formatting checker'
+    format_tools:
+      - name: 'taplo-format'
+        command: 'taplo'
+        args: ['format', '--colors', 'always']
+        file_handling_mode: 'batch'
+        default_target: ''
+        description: 'TOML formatter'

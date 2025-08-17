@@ -21,11 +21,15 @@ jobs:
         run: uv tool install poethepoet
       - name: dependencies
         run: uvx --from poethepoet poe uv-sync
-      - name: coverage
+      - name: check-toml
+        run: uv run tb check toml
+      - name: check-prettier
+        run: uv run tb check prettier
+      - name: check-python
         run: uv run tb check python
-      - name: tests
+      - name: check-coverage
         run: uv run tb check coverage
-      - name: complexity
+      - name: check-complexity
         run: uv run tb check complexity
-      - name: basedpyright
+      - name: check-basedpyright
         run: uv run tb check basedpyright

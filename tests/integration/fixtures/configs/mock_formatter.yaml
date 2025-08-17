@@ -1,17 +1,17 @@
 # Configuration for testing a simple formatter (using echo to simulate formatting)
 global_exclude_patterns:
-  - "**/__pycache__/**"
-  - "*.pyc"
+  - '**/__pycache__/**'
+  - '*.pyc'
 
 profiles:
   mock:
     name: mock
     extensions:
-      - ".txt"
+      - '.txt'
     check_tools: []
     format_tools:
-      - name: "mock-formatter"
-        command: "sh"
-        args: ["-c", "echo '# Formatted by mock formatter' > \"$1\"", "--"]
-        file_handling_mode: "per_file"
-        description: "Mock formatter for testing"
+      - name: 'mock-formatter'
+        command: 'sh'
+        args: ['-c', 'echo ''# Formatted by mock formatter'' > "$1"', '--']
+        file_handling_mode: 'per_file'
+        description: 'Mock formatter for testing'

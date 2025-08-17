@@ -7,24 +7,24 @@
 # NOTE: Keep test expectations in sync if modifying replacement logic.
 
 global_exclude_patterns:
-  - "**/__pycache__/**"
-  - "*.pyc"
+  - '**/__pycache__/**'
+  - '*.pyc'
 
 profiles:
   text:
     name: text
     extensions:
-      - ".txt"
+      - '.txt'
     check_tools: []
     format_tools:
-      - name: "text-replace"
-        command: "python"
+      - name: 'text-replace'
+        command: 'python'
         args:
-          - "-c"
+          - '-c'
           - |
             import pathlib, sys
             for p in sys.argv[1:]:
                 path = pathlib.Path(p)
                 path.write_text(path.read_text().replace("old", "new"))
-        file_handling_mode: "per_file"
-        description: "Replace text using Python (cross-platform)"
+        file_handling_mode: 'per_file'
+        description: 'Replace text using Python (cross-platform)'

@@ -6,9 +6,13 @@ check-python = 'tb check python'
 check-types = 'tb check basedpyright'
 check-complexity = 'tb check complexity'
 check-coverage = 'tb check coverage'
+check-toml = 'tb check toml'
+check-prettier = 'tb check prettier'
 ci-checks.sequence = [
-    'check-python',
-    'check-types',
-    'check-complexity',
-    'check-coverage',
+  'check-toml',
+  'check-prettier',
+  'check-python',
+  'check-types',
+  'check-complexity',
+  'check-coverage',
 ]

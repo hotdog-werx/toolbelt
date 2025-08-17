@@ -1,14 +1,14 @@
 include:
-  - "@toolbelt:resources/presets/python-core.yaml"
+  - '@toolbelt:resources/presets/python-core.yaml'
 
 profiles:
   basedpyright:
-    extensions: [".py"]
+    extensions: ['.py']
     format_tools: []
     check_tools:
-      - name: "basedpyright"
-        command: "uvx"
-        args: ["basedpyright@${TB_BASEDPYRIGHT_VERSION:latest}"]
-        file_handling_mode: "batch"
-        default_target: "."
-        description: "BasedPyright type checker"
+      - name: 'basedpyright'
+        command: 'uvx'
+        args: ['basedpyright@${TB_BASEDPYRIGHT_VERSION:latest}']
+        file_handling_mode: 'batch'
+        default_target: '.'
+        description: 'BasedPyright type checker'

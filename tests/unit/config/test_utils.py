@@ -96,10 +96,82 @@ def test_expand_template_string_should_expand_correctly(
 
 def test_expand_template_strings_should_expand_correctly() -> None:
     result = expand_template_strings(
-        ['${X}', '${Y:yy}', '${Z:zz}'],
-        {'X': 'x', 'Z': 'z'},
+        ['arg1', '${VAR1}', 'arg3'],
+        {'VAR1': 'value1'},
     )
-    assert result == ['x', 'yy', 'z']
+    assert result == ['arg1', 'value1', 'arg3']
+
+
+@pytest.mark.parametrize(
+    ('args', 'variables', 'expected', 'description'),
+    [
+        # Basic argument splitting
+        (
+            ['${TB_COVERAGE_PATHS:--cov=src}'],
+            {'TB_COVERAGE_PATHS': '--cov=toolbelt --cov=tests'},
+            ['--cov=toolbelt', '--cov=tests'],
+            'basic argument splitting',
+        ),
+        # Mixed arguments (some split, some don't)
+        (
+            ['-v', '${TB_COVERAGE_PATHS}', '--other'],
+            {'TB_COVERAGE_PATHS': '--cov=src --cov=lib'},
+            ['-v', '--cov=src', '--cov=lib', '--other'],
+            'mixed arguments with splitting',
+        ),
+        # Plain strings with spaces don't get split
+        (
+            ['arg with spaces', '${VAR}'],
+            {'VAR': 'single_value'},
+            ['arg with spaces', 'single_value'],
+            'plain strings with spaces preserved',
+        ),
+        # Variables without spaces don't get split
+        (
+            ['${VAR}'],
+            {'VAR': 'single_value'},
+            ['single_value'],
+            'single value variables not split',
+        ),
+        # Quoted arguments are handled correctly
+        (
+            ['${QUOTED_ARGS}'],
+            {'QUOTED_ARGS': '--message "hello world" --flag'},
+            ['--message', 'hello world', '--flag'],
+            'quoted arguments parsed correctly',
+        ),
+        # Malformed shell syntax falls back to single argument
+        (
+            ['${BAD_SHELL}'],
+            {'BAD_SHELL': '--arg "unclosed quote'},
+            ['--arg "unclosed quote'],
+            'malformed shell syntax fallback',
+        ),
+        # Empty strings are filtered out
+        (
+            ['-v', '${EMPTY_VAR:}', '--other'],
+            {'EMPTY_VAR': ''},
+            ['-v', '--other'],
+            'empty strings filtered out',
+        ),
+        # Empty strings in split arguments are filtered out
+        (
+            ['${MIXED_ARGS}'],
+            {'MIXED_ARGS': '--flag1  --flag2'},  # Extra spaces create empty strings when split
+            ['--flag1', '--flag2'],
+            'empty strings from extra spaces filtered',
+        ),
+    ],
+)
+def test_expand_template_strings_with_argument_splitting(
+    args: list[str],
+    variables: dict[str, str],
+    expected: list[str],
+    description: str,
+) -> None:
+    """Test that template variables containing spaces get split into multiple arguments."""
+    result = expand_template_strings(args, variables)
+    assert result == expected
 
 
 def test_environment_variables_in_template_expansion() -> None:
