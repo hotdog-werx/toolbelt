@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-set -euo pipefail
-set -x
+set -exuo pipefail
 
-# Manual publishing script for now
-VERSION=0.0.1
+# VERSION must be provided as first argument
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 <VERSION> (with PYPI_TOKEN set in environment)" >&2
+  exit 1
+fi
+VERSION="$1"
 
-# Allow token via env or first positional argument
+# PYPI_TOKEN must be set in environment
 if [ -z "${PYPI_TOKEN:-}" ]; then
-  if [ $# -lt 1 ]; then
-    echo "PYPI_TOKEN not set. Usage: PYPI_TOKEN=... $0  OR  $0 <PYPI_TOKEN>" >&2
-    exit 1
-  fi
-  PYPI_TOKEN="$1"
+  echo "PYPI_TOKEN must be set in environment. Example: PYPI_TOKEN=... $0 <VERSION>" >&2
+  exit 1
 fi
 
 # Clean previous build artifacts to avoid publishing stale files
