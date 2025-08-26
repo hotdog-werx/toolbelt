@@ -151,3 +151,27 @@ def test_merge_three_configs(tmp_path: Path):
         },
     }
     assert config_dict == expected
+
+
+def test_config_with_only_includes(tmp_path: Path):
+    """Test config that only has includes, verifying sources expansion for hdw.yaml and its nested includes."""
+    config_file = tmp_path / 'only_includes.yaml'
+    config_file.write_text(
+        dedent("""
+        include:
+          - '@toolbelt:resources/presets/hdw.yaml'
+        """),
+    )
+    config = load_config([config_file])
+    # Should include the config file itself and all nested includes
+    expected_sources = [
+        str(config_file),
+        str(Path(__file__).parent.parent.parent / 'toolbelt' / 'resources' / 'presets' / 'hdw.yaml'),
+        str(Path(__file__).parent.parent.parent / 'toolbelt' / 'resources' / 'presets' / 'python-dev.yaml'),
+        str(Path(__file__).parent.parent.parent / 'toolbelt' / 'resources' / 'presets' / 'python-hdw.yaml'),
+        str(Path(__file__).parent.parent.parent / 'toolbelt' / 'resources' / 'presets' / 'web.yaml'),
+        str(Path(__file__).parent.parent.parent / 'toolbelt' / 'resources' / 'presets' / 'yaml.yaml'),
+        str(Path(__file__).parent.parent.parent / 'toolbelt' / 'resources' / 'presets' / 'python-typed.yaml'),
+    ]
+    # The sources may be in a different order, but all should be present
+    assert set(config.sources) == set(expected_sources)
