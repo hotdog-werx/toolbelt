@@ -73,9 +73,8 @@ def process_includes(
         return data, sources
 
     includes = _normalize_includes_list(data['include'])
-    merged_data = {k: v for k, v in data.items() if k != 'include'}
-
-    # Process each include
+    # Start with an empty config, merge all includes first
+    merged_data = {}
     for include_ref in includes:
         include_result = _process_single_include(
             include_ref,
@@ -86,7 +85,8 @@ def process_includes(
             included_data, included_sources = include_result
             sources.extend(included_sources)
             merged_data = _merge_config_data(merged_data, included_data)
-
+    # Merge the current config last, so it overrides includes
+    merged_data = _merge_config_data(merged_data, {k: v for k, v in data.items() if k != 'include'})
     return merged_data, sources
 
 
@@ -204,9 +204,10 @@ def _merge_config_data(
 
     for key, value in override_data.items():
         if key == 'profiles' and key in merged:
-            # Merge profiles dict
+            # For each profile in override, fully replace the base profile
             merged_profiles = merged[key].copy()
-            merged_profiles.update(value)
+            for profile_name, profile_value in value.items():
+                merged_profiles[profile_name] = profile_value
             merged[key] = merged_profiles
         elif key == 'global_exclude_patterns' and key in merged:
             # Concatenate exclude patterns

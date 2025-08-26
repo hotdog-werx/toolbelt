@@ -160,6 +160,17 @@ def test_config_with_only_includes(tmp_path: Path):
         dedent("""
         include:
           - '@toolbelt:resources/presets/hdw.yaml'
+        profiles:
+          prettier:
+            name: new-prettier
+            extensions: [".js", ".jsx", ".ts", ".tsx"]
+            format_tools:
+              - name: "prettier"
+                command: "npx"
+                args: ["prettier", "--write", "--single-quote"]
+            check_tools: []
+            exclude_patterns: []
+            ignore_files: [".gitignore"]
         """),
     )
     config = load_config([config_file])
@@ -173,3 +184,9 @@ def test_config_with_only_includes(tmp_path: Path):
     }
     actual_filenames = {Path(src).name for src in config.sources if src != str(config_file)}
     assert expected_filenames <= actual_filenames
+
+    # Assert that the prettier profile is overridden
+    prettier_profile = config.profiles.get("prettier")
+    assert prettier_profile is not None
+    assert prettier_profile.extensions == [".js", ".jsx", ".ts", ".tsx"]
+    assert prettier_profile.format_tools[0].args == ["prettier", "--write", "--single-quote"]
