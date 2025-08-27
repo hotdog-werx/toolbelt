@@ -4,8 +4,6 @@ python.uv_venv_auto = true
 
 [env]
 COVERAGE_RCFILE = "configs/.coveragerc"
-TB_RUFF_VERSION = "0.12.10"
-TB_ADD_TRAILING_COMMA_VERSION = "3.2.0"
 
 [tools]
 uv = "0.7.20"
