@@ -68,31 +68,42 @@ def print_profile_tools(name: str, lang_config: ProfileConfig) -> None:
     console.print(panel)
 
 
+def _error(msg: str) -> int:
+    console.print(msg, style='red')
+    return 1
+
+
 def list_tools(config: ToolbeltConfig, profile: str | None = None) -> int:
-    """List available profiles and their tools."""
+    """List available profiles and their tools.
+
+    Args:
+        config: Loaded ToolbeltConfig
+        profile: Optional profile name to display; if None, list all profiles
+
+    Returns:
+        Exit code (0 for success, 1 for error)
+    """
     if profile:
         lang_config = config.get_profile(profile)
         if not lang_config:
-            console.print(
+            return _error(
                 f"[bold red]Error:[/bold red] Profile '[yellow]{profile}[/yellow]' not configured",
-                style='red',
             )
-            return 1
         print_profile_tools(profile, lang_config)
-    else:
-        languages = config.list_profiles()
-        if not languages:
-            console.print(
-                '[bold red]No profiles configured[/bold red]',
-                style='red',
-            )
-            return 0
+        return 0
+
+    profiles = config.list_profiles()
+    if not profiles:
         console.print(
-            '[bold bright_blue]Configured profiles:[/bold bright_blue]\n',
+            '[bold red]No profiles configured[/bold red]',
+            style='red',
         )
-        for lang_name in sorted(languages):
-            lang_config = config.get_profile(lang_name)
-            if lang_config:
-                print_profile_tools(lang_name, lang_config)
-                console.print()  # Empty line between profiles
+        return 0
+
+    console.print('[bold bright_blue]Configured profiles:[/bold bright_blue]\n')
+    for lang_name in sorted(profiles):
+        lang_config = config.get_profile(lang_name)
+        if lang_config:
+            print_profile_tools(lang_name, lang_config)
+            console.print()  # Empty line between profiles
     return 0
