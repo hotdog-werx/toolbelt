@@ -19,8 +19,6 @@ jobs:
         uses: jdx/mise-action@v2
       - name: setup-uv
         uses: astral-sh/setup-uv@v6
-        with:
-          version-file: 'pyproject.toml'
       - name: poe
         run: uv tool install poethepoet
       - name: dependencies
