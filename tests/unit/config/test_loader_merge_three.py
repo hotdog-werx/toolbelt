@@ -180,13 +180,22 @@ def test_config_with_only_includes(tmp_path: Path):
     assert str(config_file) in config.sources
     # All other sources should be package resources ending with the expected preset filenames
     expected_filenames = {
-        'hdw.yaml', 'python-dev.yaml', 'python-hdw.yaml', 'web.yaml', 'yaml.yaml', 'python-typed.yaml'
+        'hdw.yaml',
+        'python-dev.yaml',
+        'python-hdw.yaml',
+        'web.yaml',
+        'yaml.yaml',
+        'python-typed.yaml',
     }
     actual_filenames = {Path(src).name for src in config.sources if src != str(config_file)}
     assert expected_filenames <= actual_filenames
 
     # Assert that the prettier profile is overridden
-    prettier_profile = config.profiles.get("prettier")
+    prettier_profile = config.profiles.get('prettier')
     assert prettier_profile is not None
-    assert prettier_profile.extensions == [".js", ".jsx", ".ts", ".tsx"]
-    assert prettier_profile.format_tools[0].args == ["prettier", "--write", "--single-quote"]
+    assert prettier_profile.extensions == ['.js', '.jsx', '.ts', '.tsx']
+    assert prettier_profile.format_tools[0].args == [
+        'prettier',
+        '--write',
+        '--single-quote',
+    ]

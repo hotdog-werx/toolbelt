@@ -157,7 +157,9 @@ def test_expand_template_strings_should_expand_correctly() -> None:
         # Empty strings in split arguments are filtered out
         (
             ['${MIXED_ARGS}'],
-            {'MIXED_ARGS': '--flag1  --flag2'},  # Extra spaces create empty strings when split
+            {
+                'MIXED_ARGS': '--flag1  --flag2',
+            },  # Extra spaces create empty strings when split
             ['--flag1', '--flag2'],
             'empty strings from extra spaces filtered',
         ),
