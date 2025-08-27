@@ -192,7 +192,6 @@ def test_config_with_only_includes(tmp_path: Path):
         'python-dev.yaml',
         'python-hdw.yaml',
         'web.yaml',
-        'yaml.yaml',
         'python-typed.yaml',
     }
     actual_filenames = {Path(src).name for src in config.sources if src != str(config_file)}

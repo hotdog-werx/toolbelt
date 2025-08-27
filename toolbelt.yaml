@@ -9,7 +9,3 @@ global_exclude_patterns:
 variables:
   TB_COVERAGE_TARGET: tests
   TB_PROJECT_SOURCE: toolbelt
-  TB_RUFF_VERSION: '0.12.10'
-  TB_ADD_TRAILING_COMMA_VERSION: '3.2.0'
-  TB_COMPLEXIPY_VERSION: '4.0.2'
-  TB_BASEDPYRIGHT_VERSION: '1.31.3'

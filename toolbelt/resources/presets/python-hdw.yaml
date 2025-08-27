@@ -60,3 +60,7 @@ profiles:
         file_handling_mode: 'batch'
         default_target: '.'
         description: 'Final Python formatting pass'
+
+variables:
+  TB_RUFF_VERSION: '0.12.10'
+  TB_ADD_TRAILING_COMMA_VERSION: '3.2.0'
