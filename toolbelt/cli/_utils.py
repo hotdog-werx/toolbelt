@@ -1,10 +1,12 @@
 """Shared utilities for CLI modules."""
 
 from pathlib import Path
+from typing import Any
 
 from rich.console import Console
 
 from toolbelt.config.discovery import find_config_sources
+from toolbelt.config.loader import load_config
 
 console = Console()
 
@@ -41,3 +43,13 @@ def show_config_sources(
     sources = find_config_sources(config_path)
     print_config_sources_list([str(s) for s in sources], title)
     return sources
+
+
+def get_profile_names_completer(**kwargs: Any) -> list[str]:  # noqa: ARG001
+    # kwargs is required by argcomplete interface, even if unused
+    """Return available profile names for argcomplete completion."""
+    try:
+        config = load_config(None)
+        return list(config.profiles.keys())
+    except Exception:  # noqa: BLE001 - catch all to avoid breaking completion
+        return []

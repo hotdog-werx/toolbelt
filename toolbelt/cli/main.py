@@ -3,6 +3,8 @@ import sys
 import traceback
 from pathlib import Path
 
+import argcomplete
+
 from toolbelt import __version__
 from toolbelt.config.loader import load_config
 from toolbelt.logging import configure_logging, get_logger
@@ -73,13 +75,7 @@ def main() -> int:
 
     parser = create_parser()
 
-    # Enable argcomplete tab completion if available
-    try:
-        import argcomplete
-        argcomplete.autocomplete(parser)
-    except ImportError:
-        pass
-
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     # Configure logging first
