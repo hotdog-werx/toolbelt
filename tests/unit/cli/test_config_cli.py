@@ -21,11 +21,17 @@ include = ["@toolbelt:resources/presets/hdw.yaml"]
         capture_output=True,
         text=True,
     )
-    output = result.stdout
+    output = result.stdout.replace(
+        '\n',
+        '',
+    )  # Remove line breaks for robust matching
     # Should show all sources, including nested includes
-    assert 'hdw.yaml' in output
-    assert 'python-dev.yaml' in output
-    assert 'web.yaml' in output
-    assert 'yaml.yaml' in output
-    assert 'python-hdw.yaml' in output
-    assert 'python-typed.yaml' in output
+    for fname in [
+        'hdw.yaml',
+        'python-dev.yaml',
+        'web.yaml',
+        'yaml.yaml',
+        'python-hdw.yaml',
+        'python-typed.yaml',
+    ]:
+        assert fname in output, f'Expected {fname} in CLI output'
