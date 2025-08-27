@@ -27,7 +27,7 @@ profiles:
         command: 'pytest'
         args:
           [
-            '-v',
+            '-${TB_COVERAGE_VERBOSE:v}',
             '--tb=short',
             '--cov=${TB_PROJECT_SOURCE:src}',
             '--cov-report=term-missing',
@@ -53,3 +53,6 @@ profiles:
         file_handling_mode: 'batch'
         default_target: ''
         description: 'TOML formatter'
+
+variables:
+  TB_COMPLEXIPY_VERSION: '4.0.2'

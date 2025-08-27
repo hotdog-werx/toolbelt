@@ -3,6 +3,8 @@ import sys
 import traceback
 from pathlib import Path
 
+import argcomplete
+
 from toolbelt import __version__
 from toolbelt.config.loader import load_config
 from toolbelt.logging import configure_logging, get_logger
@@ -72,6 +74,8 @@ def main() -> int:
     logger = get_logger(__name__)
 
     parser = create_parser()
+
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     # Configure logging first

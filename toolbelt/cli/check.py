@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+from toolbelt.cli._utils import get_profile_names_completer
 from toolbelt.config.models import ToolbeltConfig
 from toolbelt.runner.orchestrator import run_check
 
@@ -17,10 +18,11 @@ def add_check_subparser(
         The created ArgumentParser for the 'check' command.
     """
     check_parser = subparsers.add_parser('check', help='Run checks on files')
-    check_parser.add_argument(
+    check_profile_arg = check_parser.add_argument(
         'profile',
         help='Profile to check (e.g., python, javascript, coverage, test)',
     )
+    check_profile_arg.completer = get_profile_names_completer
     check_parser.add_argument(
         'files',
         nargs='*',

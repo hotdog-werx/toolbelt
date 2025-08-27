@@ -6,6 +6,17 @@ from .file_loaders import load_pyproject_toml
 from .includes import resolve_config_reference
 
 
+def _resolve_include(config_ref: str, cwd: Path) -> Path | None:
+    """Resolve a single config reference, returning Path or None if invalid."""
+    try:
+        resolved_path = resolve_config_reference(config_ref, cwd)
+        if resolved_path and (config_ref.startswith('@') or resolved_path.exists()):
+            return resolved_path
+    except (ValueError, ImportError, FileNotFoundError):
+        pass
+    return None
+
+
 def _load_from_pyproject_includes(cwd: Path) -> list[Path]:
     """Load configuration sources from pyproject.toml [tool.toolbelt] include."""
     pyproject_path = cwd / 'pyproject.toml'
@@ -16,20 +27,7 @@ def _load_from_pyproject_includes(cwd: Path) -> list[Path]:
     if not toolbelt_config or 'include' not in toolbelt_config:
         return []
 
-    sources = []
-    for config_ref in toolbelt_config['include']:
-        try:
-            resolved_path = resolve_config_reference(config_ref, cwd)
-            # For regular files, check if they exist
-            # For package resources, the resolve function already validates existence
-            if resolved_path and (config_ref.startswith('@') or resolved_path.exists()):
-                sources.append(resolved_path)
-        except (ValueError, ImportError, FileNotFoundError):
-            # Skip invalid references (package not found, resource not found, etc.)
-            # This allows graceful degradation when optional packages aren't installed
-            continue
-
-    return sources
+    return [src for config_ref in toolbelt_config['include'] if (src := _resolve_include(config_ref, cwd)) is not None]
 
 
 def _find_standalone_config(cwd: Path) -> list[Path]:

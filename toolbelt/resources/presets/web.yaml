@@ -4,14 +4,23 @@ profiles:
     check_tools:
       - name: 'prettier'
         command: 'pnpm'
-        args: ['dlx', 'prettier@${TB_PRETTIER_VERSION:latest}', '--check']
+        args:
+          - 'dlx'
+          - 'prettier@${TB_PRETTIER_VERSION:latest}'
+          - '--check'
         file_handling_mode: 'batch'
         default_target: '.'
         description: 'Prettier formatter'
     format_tools:
       - name: 'prettier'
         command: 'pnpm'
-        args: ['dlx', 'prettier@${TB_PRETTIER_VERSION:latest}', '--write']
+        args:
+          - 'dlx'
+          - 'prettier@${TB_PRETTIER_VERSION:latest}'
+          - '--write'
         file_handling_mode: 'batch'
         default_target: '.'
         description: 'Prettier formatter'
+
+variables:
+  TB_PRETTIER_VERSION: '3.6.2'

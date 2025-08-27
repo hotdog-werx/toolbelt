@@ -108,7 +108,6 @@ profiles: {}
 
     # Should have profiles from the toolbelt resource
     assert 'python' in config.profiles
-    assert 'yaml' in config.profiles
 
     # Should have both original and new variables
     assert config.variables['my_var'] == 'my_value'

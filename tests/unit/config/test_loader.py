@@ -194,7 +194,8 @@ def test_load_config_default(mocker: MockerFixture) -> None:
     assert isinstance(result, ToolbeltConfig)
     # Should be default config with standard profiles
     assert 'python' in result.profiles
-    assert result.sources == ['__default__']
+    # Should include hdw.yaml preset as a source
+    assert any('hdw.yaml' in src for src in result.sources)
 
 
 def test_load_config_specific_config_path(sample_yaml_config: Path) -> None:
@@ -219,8 +220,10 @@ def test_load_config_default_when_no_file(mocker: MockerFixture) -> None:
     )
 
     result = load_config([])
-    assert result is mock_config
+    # Compare fields, not object identity, to allow for variable merging
     assert result.sources == ['__made_up_default__']
+    assert result.profiles == mock_config.profiles
+    assert result.global_exclude_patterns == mock_config.global_exclude_patterns
 
 
 def test_load_config_multiple(

@@ -13,6 +13,7 @@ dependencies = [
   "pathspec>=0.12.0, <1",
   "structlog>=25.4.0, <26",
   "rich>=14.0.0, <15",
+  "argcomplete>=3.6.2, <4",
 ]
 
 [project.scripts]
@@ -26,25 +27,16 @@ dev = ["pytest>=8.0.0", "pytest-mock>=3.12.0", "pytest-cov>=4.0.0"]
 [tool.hatch]
 build.packages = ["toolbelt"]
 metadata.allow-direct-references = true
+version.path = 'toolbelt/version.py'
 
-[tool.hatch.version]
-path = 'toolbelt/version.py'
-
-[tool.poe]
-include = ["configs/tasks.toml"]
-
-[tool.ruff]
-extend = "configs/ruff.toml"
-exclude = [
+[tool]
+poe.include = ["configs/tasks.toml"]
+pyright.typeCheckingMode = "standard"
+ruff.extend = "configs/ruff.toml"
+ruff.exclude = [
   "tests/**/fixtures/**", # Exclude test fixture resources from linting
 ]
-
-[tool.pyright]
-typeCheckingMode = "standard"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.toolbelt]
-include = ["@toolbelt:resources/presets/hdw.yaml", "toolbelt.yaml"]

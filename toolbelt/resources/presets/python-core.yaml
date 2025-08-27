@@ -27,3 +27,6 @@ profiles:
         file_handling_mode: 'batch'
         default_target: '.'
         description: 'Auto-fix Python issues with Ruff'
+
+variables:
+  TB_RUFF_VERSION: '0.12.10'

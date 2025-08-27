@@ -95,3 +95,18 @@ TB_COVERAGE_EXTRA_ARGS="--cov=lib --cov=scripts --cov-fail-under=85"
 This makes it easy to add multiple coverage directories, set thresholds, enable
 branch coverage, or add any other pytest/coverage options without needing to
 override the entire tool configuration.
+
+## Tab Completion (argcomplete)
+
+Toolbelt supports tab completion for its CLI using
+[argcomplete](https://pypi.org/project/argcomplete/).
+
+### Bash / Zsh
+
+Add this to your shell or `.bashrc` / `.zshrc`:
+
+```bash
+eval "$(register-python-argcomplete tb)"
+```
+
+After setup, you can use tab completion for all CLI options and arguments.
