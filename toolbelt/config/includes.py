@@ -86,7 +86,10 @@ def process_includes(
             sources.extend(included_sources)
             merged_data = _merge_config_data(merged_data, included_data)
     # Merge the current config last, so it overrides includes
-    merged_data = _merge_config_data(merged_data, {k: v for k, v in data.items() if k != 'include'})
+    merged_data = _merge_config_data(
+        merged_data,
+        {k: v for k, v in data.items() if k != 'include'},
+    )
     return merged_data, sources
 
 

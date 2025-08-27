@@ -5,7 +5,7 @@ from rich.table import Table
 
 from toolbelt.config.models import ToolbeltConfig, ToolConfig, get_tool_command
 
-from ._utils import show_config_sources
+from ._utils import print_config_sources_list
 
 console = Console()
 
@@ -186,7 +186,10 @@ def handle_config_command(
         Exit code from the config command.
     """
     # Show configuration sources
-    show_config_sources(args.config)
+    print_config_sources_list(
+        config.sources,
+        'Configuration Sources (in load order)',
+    )
 
     # Show variables if requested
     if args.show_variables:

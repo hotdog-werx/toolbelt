@@ -9,6 +9,22 @@ from toolbelt.config.discovery import find_config_sources
 console = Console()
 
 
+def print_config_sources_list(
+    sources: list[str],
+    title: str = 'Configuration Sources',
+) -> None:
+    """Print a list of config sources with a title."""
+    if sources:
+        console.print(f'[bold bright_blue]{title}:[/bold bright_blue]')
+        for i, source in enumerate(sources, 1):
+            console.print(f'  [cyan]{i}.[/cyan] [white]{source}[/white]')
+    else:
+        console.print(
+            '[bold yellow]No configuration sources found, using defaults.[/bold yellow]',
+        )
+    console.print()  # Empty line for spacing
+
+
 def show_config_sources(
     config_path: Path | None,
     title: str = 'Configuration Sources',
@@ -23,13 +39,5 @@ def show_config_sources(
         List of source paths found
     """
     sources = find_config_sources(config_path)
-    if sources:
-        console.print(f'[bold bright_blue]{title}:[/bold bright_blue]')
-        for i, source in enumerate(sources, 1):
-            console.print(f'  [cyan]{i}.[/cyan] [white]{source}[/white]')
-    else:
-        console.print(
-            '[bold yellow]No configuration sources found, using defaults.[/bold yellow]',
-        )
-    console.print()  # Empty line for spacing
+    print_config_sources_list([str(s) for s in sources], title)
     return sources
