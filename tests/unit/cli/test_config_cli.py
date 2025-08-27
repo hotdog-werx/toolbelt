@@ -30,7 +30,6 @@ include = ["@toolbelt:resources/presets/hdw.yaml"]
         'hdw.yaml',
         'python-dev.yaml',
         'web.yaml',
-        'yaml.yaml',
         'python-hdw.yaml',
         'python-typed.yaml',
     ]:

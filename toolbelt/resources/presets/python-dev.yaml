@@ -27,7 +27,7 @@ profiles:
         command: 'pytest'
         args:
           [
-            '-vv',
+            '-${TB_COVERAGE_VERBOSE:v}',
             '--tb=short',
             '--cov=${TB_PROJECT_SOURCE:src}',
             '--cov-report=term-missing',
