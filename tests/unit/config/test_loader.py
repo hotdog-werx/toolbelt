@@ -219,8 +219,10 @@ def test_load_config_default_when_no_file(mocker: MockerFixture) -> None:
     )
 
     result = load_config([])
-    assert result is mock_config
+    # Compare fields, not object identity, to allow for variable merging
     assert result.sources == ['__made_up_default__']
+    assert result.profiles == mock_config.profiles
+    assert result.global_exclude_patterns == mock_config.global_exclude_patterns
 
 
 def test_load_config_multiple(

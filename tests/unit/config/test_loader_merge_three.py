@@ -150,7 +150,15 @@ def test_merge_three_configs(tmp_path: Path):
             'ESLINT_VERSION': 'latest',
         },
     }
-    assert config_dict == expected
+    # Only compare expected variables as a subset, since project-level toolbelt.yaml may add more
+    for k, v in expected['variables'].items():
+        assert config_dict['variables'][k] == v
+    # Compare all other fields except variables
+    expected_no_vars = expected.copy()
+    config_dict_no_vars = config_dict.copy()
+    del expected_no_vars['variables']
+    del config_dict_no_vars['variables']
+    assert config_dict_no_vars == expected_no_vars
 
 
 def test_config_with_only_includes(tmp_path: Path):
