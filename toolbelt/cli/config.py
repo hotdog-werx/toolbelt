@@ -5,7 +5,7 @@ from rich.table import Table
 
 from toolbelt.config.models import ToolbeltConfig, ToolConfig, get_tool_command
 
-from ._utils import print_config_sources_list
+from ._utils import get_profile_names_completer, print_config_sources_list
 
 console = Console()
 
@@ -25,11 +25,12 @@ def add_config_subparser(
         'config',
         help='Show configuration details including sources and raw commands',
     )
+
     config_parser.add_argument(
         'profile',
         nargs='?',
         help='Show detailed configuration for a specific profile',
-    )
+    ).completer = get_profile_names_completer
     config_parser.add_argument(
         '--show-variables',
         action='store_true',
