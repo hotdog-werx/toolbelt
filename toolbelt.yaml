@@ -1,9 +1,13 @@
+include:
+  - '@toolbelt:resources/presets/hdw.yaml'
+
 profiles: {} # None - only overriding variables
 
 global_exclude_patterns:
   - tests/integration/fixtures/**/*.py
 
 variables:
-  TB_RUFF_VERSION: latest
   TB_COVERAGE_TARGET: tests
   TB_PROJECT_SOURCE: toolbelt
+  TB_RUFF_VERSION: '0.12.10'
+  TB_ADD_TRAILING_COMMA_VERSION: '3.2.0'
