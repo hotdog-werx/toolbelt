@@ -71,4 +71,5 @@ def test_load_config_yaml(tmp_path: Path):
 def test_load_config_default_sources():
     """Test that load_config returns default config when no sources found."""
     config = load_config([])
-    assert config.sources == ['__default__']
+    # Should include hdw.yaml preset as a source
+    assert any('hdw.yaml' in src for src in config.sources)
