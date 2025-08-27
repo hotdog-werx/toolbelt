@@ -72,6 +72,14 @@ def main() -> int:
     logger = get_logger(__name__)
 
     parser = create_parser()
+
+    # Enable argcomplete tab completion if available
+    try:
+        import argcomplete
+        argcomplete.autocomplete(parser)
+    except ImportError:
+        pass
+
     args = parser.parse_args()
 
     # Configure logging first
