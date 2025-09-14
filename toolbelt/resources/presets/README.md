@@ -72,16 +72,16 @@ variables:
 ```yaml
 # For a simple Python project
 include:
-  - "@toolbelt:resources/presets/python-core.yaml"
+  - '@toolbelt:resources/presets/python-core.yaml'
 
 # For a Python project with type checking
 include:
-  - "@toolbelt:resources/presets/python-typed.yaml"
+  - '@toolbelt:resources/presets/python-typed.yaml'
 
 # For a full-stack web project
 include:
-  - "@toolbelt:resources/presets/python-dev.yaml"
-  - "@toolbelt:resources/presets/web.yaml"
+  - '@toolbelt:resources/presets/python-dev.yaml'
+  - '@toolbelt:resources/presets/web.yaml'
 ```
 
 ## Preset Hierarchy

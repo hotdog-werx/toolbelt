@@ -1,11 +1,7 @@
 include:
-  - '@toolbelt:resources/presets/hdw.yaml'
-
-profiles: {} # None - only overriding variables
-
-global_exclude_patterns:
-  - tests/integration/fixtures/**/*.py
+  - .codeguide/toolbelt/toolbelt.yaml
 
 variables:
   TB_COVERAGE_TARGET: tests
   TB_PROJECT_SOURCE: toolbelt
+  TB_RUFF_CONFIG: ruff.toml

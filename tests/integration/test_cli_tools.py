@@ -83,7 +83,7 @@ def test_tool_integration(
 ) -> None:
     """Test different tool types work correctly through the CLI."""
     # Set up test environment
-    config_path, file_paths = setup_test_environment(
+    _, file_paths = setup_test_environment(
         test_case.config_file,
         test_case.test_files,
     )
@@ -149,7 +149,7 @@ def test_toolbelt_list_command(
 ) -> None:
     """Test that toolbelt list shows configured profiles."""
     # Set up with any config
-    config_path, _ = setup_test_environment('ruff_batch.yaml', [])
+    _, _ = setup_test_environment('ruff_batch.yaml', [])
 
     result = run_toolbelt_cli(['list'], cwd=tmp_path)
 
@@ -163,7 +163,7 @@ def test_invalid_profile(
     run_toolbelt_cli: RunToolbeltCLI,
 ) -> None:
     """Test error handling with invalid profile."""
-    config_path, _ = setup_test_environment('ruff_batch.yaml', [])
+    _, _ = setup_test_environment('ruff_batch.yaml', [])
 
     result = run_toolbelt_cli(['check', 'nonexistent'], cwd=tmp_path)
 
@@ -178,7 +178,7 @@ def test_no_files_found(
     run_toolbelt_cli: RunToolbeltCLI,
 ) -> None:
     """Test behavior when no matching files are found."""
-    config_path, _ = setup_test_environment('ruff_batch.yaml', [])
+    _, _ = setup_test_environment('ruff_batch.yaml', [])
 
     # Run check on empty directory
     result = run_toolbelt_cli(['check', 'python'], cwd=tmp_path)
@@ -193,7 +193,7 @@ def test_verbose_output(
     run_toolbelt_cli: RunToolbeltCLI,
 ) -> None:
     """Test that verbose flag provides more detailed output."""
-    config_path, file_paths = setup_test_environment(
+    _, _ = setup_test_environment(
         'ruff_batch.yaml',
         ['bad_python_for_ruff.py'],
     )
@@ -220,7 +220,7 @@ def test_specific_file_targeting(
     run_toolbelt_cli: RunToolbeltCLI,
 ) -> None:
     """Test running tools on specific files rather than discovery mode."""
-    config_path, file_paths = setup_test_environment(
+    _, file_paths = setup_test_environment(
         'ruff_batch.yaml',
         ['bad_python_for_ruff.py'],
     )

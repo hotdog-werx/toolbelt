@@ -30,12 +30,7 @@ metadata.allow-direct-references = true
 version.path = 'toolbelt/version.py'
 
 [tool]
-poe.include = ["configs/tasks.toml"]
-pyright.typeCheckingMode = "standard"
-ruff.extend = "configs/ruff.toml"
-ruff.exclude = [
-  "tests/**/fixtures/**", # Exclude test fixture resources from linting
-]
+pyright.extends = ".codeguide/configs/pyrightconfig.json"
 
 [build-system]
 requires = ["hatchling"]

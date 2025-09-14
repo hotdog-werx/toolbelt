@@ -18,7 +18,7 @@ jobs:
       - name: setup-uv
         uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.11'
+          python-version: "3.11"
           activate-environment: true
       - name: mise
         uses: jdx/mise-action@v2
@@ -26,15 +26,13 @@ jobs:
         run: uv tool install poethepoet
       - name: dependencies
         run: uvx --from poethepoet poe uv-sync
-      - name: check-toml
-        run: uv run tb check toml
-      - name: check-prettier
-        run: uv run tb check prettier
+      - name: check-dprint
+        run: uv run tb check dprint
       - name: check-python
         run: uv run tb check python
-      - name: check-coverage
-        run: uv run tb check coverage
-      - name: check-complexity
-        run: uv run tb check complexity
       - name: check-basedpyright
         run: uv run tb check basedpyright
+      - name: check-complexity
+        run: uv run tb check complexity
+      - name: check-coverage
+        run: uv run tb check coverage
