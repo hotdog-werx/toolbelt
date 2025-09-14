@@ -22,9 +22,9 @@ profiles:
         args:
           - '-c'
           - |
-            import pathlib, sys
-            for p in sys.argv[1:]:
-                path = pathlib.Path(p)
-                path.write_text(path.read_text().replace("old", "new"))
+              import pathlib, sys
+              for p in sys.argv[1:]:
+                  path = pathlib.Path(p)
+                  path.write_text(path.read_text().replace("old", "new"))
         file_handling_mode: 'per_file'
         description: 'Replace text using Python (cross-platform)'

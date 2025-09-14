@@ -2,14 +2,13 @@
 experimental = true
 python.uv_venv_auto = true
 
-[env]
-COVERAGE_RCFILE = "configs/.coveragerc"
-
 [tools]
 uv = "0.7.20"
-taplo = "0.10.0"
-node = "24.4.1"
-pnpm = "10.13.1"
-mdbook = "0.4.52"
-yq = "4.47.1"
+dprint = "0.50.1"
 starship = "1.23.0"
+
+[hooks]
+postinstall = [
+  "uvx pkglink github:hotdog-werx/codeguide@topic/updates",
+  "poe setup-hook",
+]

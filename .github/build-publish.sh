@@ -25,3 +25,6 @@ uv build --no-sources
 export UV_PUBLISH_USERNAME=__token__
 export UV_PUBLISH_PASSWORD="${PYPI_TOKEN}"
 uv publish
+
+git tag "v${VERSION}"
+git push origin "v${VERSION}"

@@ -29,4 +29,4 @@ profiles:
         description: 'Auto-fix Python issues with Ruff'
 
 variables:
-  TB_RUFF_VERSION: '0.12.10'
+  TB_RUFF_VERSION: '0.13.0'
