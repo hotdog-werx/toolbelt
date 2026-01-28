@@ -105,6 +105,11 @@ class ToolbeltConfig(BaseModel):
         default_factory=dict,
         description='Template variables for use in tool configurations',
     )
+    raw_variables: dict[str, str] = Field(
+        default_factory=dict,
+        exclude=True,  # Don't include in serialization
+        description='Raw template variable definitions before expansion',
+    )
 
     def get_profile(self, name: str) -> ProfileConfig | None:
         """Get configuration for a specific profile."""

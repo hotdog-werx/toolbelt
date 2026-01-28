@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from textwrap import dedent
 
@@ -43,12 +44,23 @@ def test_load_config_explicit_path(tmp_path: Path):
 
 def test_load_config_with_pyproject_include(tmp_path: Path):
     """Test load_config discovers sources from pyproject.toml include."""
-    pyproject_file = tmp_path / 'pyproject.toml'
-    pyproject_file.write_text('[tool.toolbelt]\ninclude = ["toolbelt.yaml"]\n')
-    yaml_file = tmp_path / 'toolbelt.yaml'
-    yaml_file.write_text('profiles:\n  python:\n    extensions: [".py"]')
-    config = load_config()
-    assert 'python' in config.profiles
+    # IMPORTANT: We must change to tmp_path because load_config() without arguments
+    # uses the discovery mechanism that looks in the current working directory.
+    # Without this, it would load the configuration from toolbelt's repo root instead
+    # of the test files we created.
+    old_cwd = Path.cwd()
+    try:
+        os.chdir(tmp_path)
+        pyproject_file = tmp_path / 'pyproject.toml'
+        pyproject_file.write_text('[tool.toolbelt]\ninclude = ["toolbelt.yaml"]\n')
+        yaml_file = tmp_path / 'toolbelt.yaml'
+        yaml_file.write_text(
+            'profiles:\n  python:\n    extensions: [".py"]\n    check_tools: []\n    format_tools: []'
+        )
+        config = load_config()
+        assert 'python' in config.profiles
+    finally:
+        os.chdir(old_cwd)
 
 
 def test_load_config_yaml(tmp_path: Path):

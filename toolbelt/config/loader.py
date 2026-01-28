@@ -5,6 +5,7 @@ from .defaults import get_default_config
 from .discovery import find_config_sources
 from .file_loaders import load_config_from_file
 from .models import ToolbeltConfig
+from .utils import expand_template_string
 
 
 def get_env_variables_context() -> dict[str, str]:
@@ -17,6 +18,26 @@ def get_env_variables_context() -> dict[str, str]:
     """
     allowed_prefixes = ('TOOLBELT_', 'TB_', 'TBELT_', 'CI_', 'BUILD_')
     return {k: v for k, v in os.environ.items() if any(k.startswith(prefix) for prefix in allowed_prefixes)}
+
+
+def expand_variables_with_env_templates(
+    variables: dict[str, str],
+) -> dict[str, str]:
+    """Expand templates in variables using all environment variables.
+
+    This allows config files to reference any environment variable in their
+    variable definitions, while maintaining security through filtered overrides.
+
+    Args:
+        variables: Raw variables dict from config files.
+
+    Returns:
+        Variables dict with templates expanded using all env vars.
+    """
+    expanded_variables = {}
+    for key, value in variables.items():
+        expanded_variables[key] = expand_template_string(value, dict(os.environ))
+    return expanded_variables
 
 
 def load_config(config_paths: list[Path] | None = None) -> ToolbeltConfig:
@@ -42,6 +63,18 @@ def load_config(config_paths: list[Path] | None = None) -> ToolbeltConfig:
         for source in sources[1:]:
             override_config = load_config_from_file(source)
             config = merge_configs(config, override_config)
+
+    # Expand any templates in variables using all environment variables
+    # This allows config files to reference any env var they need
+    if config.variables:
+        # Store raw variables before expansion for display purposes
+        raw_vars = config.variables.copy()
+        expanded_variables = expand_variables_with_env_templates(
+            config.variables,
+        )
+        config = config.model_copy(
+            update={'variables': expanded_variables, 'raw_variables': raw_vars},
+        )
 
     # Apply environment variables as final step (highest precedence)
     env_variables = get_env_variables_context()
@@ -96,10 +129,12 @@ def merge_configs(
     # Merge variables: base < override (config files only)
     # Environment variables will be applied later in load_config()
     merged_variables = {**base.variables, **override.variables}
+    merged_raw_variables = {**base.raw_variables, **override.raw_variables}
 
     return ToolbeltConfig(
         sources=[*base.sources, *override.sources],
         profiles=merged_languages,
         global_exclude_patterns=merged_excludes,
         variables=merged_variables,
+        raw_variables=merged_raw_variables,
     )
