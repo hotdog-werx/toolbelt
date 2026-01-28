@@ -52,10 +52,10 @@ def _show_variables(config: ToolbeltConfig) -> None:
         env_overrides = get_env_variables_context()
 
         table = Table(show_header=True, header_style='bold magenta', box=None)
-        table.add_column('Variable', style='bold green', width=30)
+        table.add_column('Variable', style='bold green', no_wrap=True)
         table.add_column('Value', style='white')
-        table.add_column('Raw Value', style='yellow', width=30)
-        table.add_column('Source', style='cyan', width=12)
+        table.add_column('Raw Value', style='yellow', no_wrap=True)
+        table.add_column('Source', style='cyan', no_wrap=True)
 
         for key, value in sorted(variables.items()):
             source = 'env' if key in env_overrides else 'config'
