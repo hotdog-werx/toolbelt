@@ -1,0 +1,9 @@
+directories:
+  - ./.pkglink/.codeguide/templates
+
+post_process:
+  - poe format-dprint
+
+context:
+  codeguide_ref: topic/repolish
+  ci_operating_systems: '["windows-latest", "ubuntu-latest", "macos-latest"]'

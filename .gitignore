@@ -11,3 +11,9 @@ __pycache__/
 test_ignored.py
 htmlcov/
 book/
+.pytest_cache/*
+.pkglink/
+tmp*
+/.editorconfig
+site
+.repolish/*
