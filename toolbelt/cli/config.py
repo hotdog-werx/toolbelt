@@ -3,6 +3,7 @@ import argparse
 from rich.console import Console
 from rich.table import Table
 
+from toolbelt.config.loader import get_env_variables_context
 from toolbelt.config.models import ToolbeltConfig, ToolConfig, get_tool_command
 
 from ._utils import get_profile_names_completer, print_config_sources_list
@@ -47,14 +48,31 @@ def _show_variables(config: ToolbeltConfig) -> None:
             '[bold bright_blue]Template Variables:[/bold bright_blue]',
         )
 
+        # Get filtered env vars to identify overrides
+        env_overrides = get_env_variables_context()
+
         table = Table(show_header=True, header_style='bold magenta', box=None)
-        table.add_column('Variable', style='bold green', width=30)
+        table.add_column('Variable', style='bold green', no_wrap=True)
         table.add_column('Value', style='white')
+        table.add_column('Raw Value', style='yellow', no_wrap=True)
+        table.add_column('Source', style='cyan', no_wrap=True)
 
         for key, value in sorted(variables.items()):
-            table.add_row(key, value)
+            source = 'env' if key in env_overrides else 'config'
+            raw_value = config.raw_variables.get(key, '')
+
+            # Only show raw value if it's different from expanded and came from config
+            display_raw = raw_value if source == 'config' and raw_value != value else ''
+
+            table.add_row(key, value, display_raw, source)
 
         console.print(table)
+        console.print(
+            '[dim]Source: config (from config files) | env (from environment variables)[/dim]',
+        )
+        console.print(
+            '[dim]Raw Value: shows original template definition when different from expanded value[/dim]',
+        )
     else:
         console.print(
             '[bold yellow]No template variables defined.[/bold yellow]',

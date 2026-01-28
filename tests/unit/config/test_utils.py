@@ -3,7 +3,10 @@ from dataclasses import dataclass
 
 import pytest
 
-from toolbelt.config.loader import get_env_variables_context
+from toolbelt.config.loader import (
+    expand_variables_with_env_templates,
+    get_env_variables_context,
+)
 from toolbelt.config.utils import (
     expand_template_string,
     expand_template_strings,
@@ -234,6 +237,53 @@ def test_environment_variables_in_template_expansion() -> None:
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = original_value
+
+
+def test_config_variables_can_reference_any_env_var(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that config variables can reference any environment variable via templates.
+
+    This allows config files to use external environment variables without requiring
+    them to be redefined in the config, while still maintaining security through
+    filtered runtime overrides.
+    """
+    # Set up test environment variables (including one that would be filtered)
+    test_env_vars = {
+        'TOOLBELT_ALLOWED_VAR': 'allowed_value',
+        'EXTERNAL_TOOL_VAR': 'external_value',
+        'SECRET_API_KEY': 'secret123',  # Would be filtered from runtime overrides
+        'HOME': '/home/user',  # Common env var
+    }
+
+    # Use monkeypatch to temporarily set environment variables
+    for key, value in test_env_vars.items():
+        monkeypatch.setenv(key, value)
+
+    # Test that any env var can be referenced in config variables
+    config_variables = {
+        'tb_var': '${TOOLBELT_ALLOWED_VAR}',
+        'external_var': '${EXTERNAL_TOOL_VAR}',
+        'secret_var': '${SECRET_API_KEY}',
+        'home_var': '${HOME}',
+        'combined': '${EXTERNAL_TOOL_VAR}-${HOME}',
+        'missing_with_default': '${MISSING_VAR:default_value}',
+    }
+
+    expanded = expand_variables_with_env_templates(config_variables)
+
+    # Verify all variables were expanded using all env vars
+    assert expanded['tb_var'] == 'allowed_value'
+    assert expanded['external_var'] == 'external_value'
+    assert expanded['secret_var'] == 'secret123'  # noqa: S105  # Even sensitive vars are accessible
+    assert expanded['home_var'] == '/home/user'
+    assert expanded['combined'] == 'external_value-/home/user'
+    assert expanded['missing_with_default'] == 'default_value'
+
+    # Verify that filtered env context still excludes sensitive vars
+    filtered_env = get_env_variables_context()
+    assert 'TOOLBELT_ALLOWED_VAR' in filtered_env
+    assert 'EXTERNAL_TOOL_VAR' not in filtered_env  # Not in allowed prefixes
+    assert 'SECRET_API_KEY' not in filtered_env
+    assert 'HOME' not in filtered_env
 
 
 @dataclass
