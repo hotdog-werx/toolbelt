@@ -23,7 +23,7 @@ git-cliff = "2.11.0"
 actionlint = "1.7.10"
 shellcheck = "0.11.0"
 
-"pipx:poethepoet" = "0.36.0"
+"pipx:poethepoet" = "0.40.0"
 "pipx:pkglink" = "1.0.1"
 "pipx:tbelt" = "0.0.3"
 "pipx:ruff" = "0.12.3"
