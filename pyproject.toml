@@ -30,7 +30,12 @@ metadata.allow-direct-references = true
 version.path = 'toolbelt/version.py'
 
 [tool]
-pyright.extends = ".codeguide/configs/pyrightconfig.json"
+pyright.extends = ".pkglink/.codeguide/configs/pyrightconfig.json"
+
+[tool.releez]
+create-pr = true
+run-changelog-format = true
+hooks = { changelog-format = ["mise", "exec", "--", "poe", "format-dprint", "{changelog}"] }
 
 [build-system]
 requires = ["hatchling"]

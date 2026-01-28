@@ -2,13 +2,29 @@
 experimental = true
 python.uv_venv_auto = true
 
+[env]
+GITHUB_REPO_OWNER = "hotdog-werx"
+GITHUB_REPO_NAME = "{{ config_root | basename }}"
+GITHUB_REPO = "{{ env.GITHUB_REPO_OWNER }}/{{ env.GITHUB_REPO_NAME }}"
+GIT_CLIFF_CONFIG = "./.pkglink/.codeguide/configs/cliff.toml"
+
+[tasks]
+pkglink.run = "mise exec -- pkglink sync"
+setup-hook.run = "mise exec -- poe setup-hook"
+
+[hooks]
+postinstall = ["mise run pkglink", "mise run setup-hook"]
+
 [tools]
 uv = "0.7.20"
 dprint = "0.50.1"
-starship = "1.23.0"
+starship = "1.21.1"
+git-cliff = "2.11.0"
+actionlint = "1.7.10"
+shellcheck = "0.11.0"
 
-[hooks]
-postinstall = [
-  "uvx pkglink github:hotdog-werx/codeguide@topic/updates",
-  "poe setup-hook",
-]
+"pipx:poethepoet" = "0.36.0"
+"pipx:pkglink" = "1.0.1"
+"pipx:tbelt" = "0.0.3"
+"pipx:ruff" = "0.12.3"
+"pipx:hotdog-werx/releez" = "topic/changelog-regen"

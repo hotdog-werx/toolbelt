@@ -1,7 +1,8 @@
 include:
-  - .codeguide/toolbelt/toolbelt.yaml
+  - .pkglink/.codeguide/toolbelt/toolbelt.yaml
 
 variables:
+  TB_COVERAGE_CONFIG: .pkglink/.codeguide/configs/coveragerc.toml
   TB_COVERAGE_TARGET: tests
   TB_PROJECT_SOURCE: toolbelt
   TB_RUFF_CONFIG: ruff.toml
