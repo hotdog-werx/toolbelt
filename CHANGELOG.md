@@ -23,12 +23,13 @@ View [unreleased changes][unreleased] since the last release.
 
 [0.1.0]: https://github.com/hotdog-werx/toolbelt/compare/0.0.3...0.1.0
 
-# Changelog
+## [0.0.3] <a name="0.0.3" href="#0.0.3">-</a> August 27, 2025
 
-All notable changes to this project will be documented in this file.
+### 🚀 Features
 
-This changelog is automatically generated using
-[git-cliff](https://git-cliff.org/) from commit messages following
-[Conventional Commits](https://www.conventionalcommits.org/).
+- Implement dynamic argument expansion and add TOML support (#3) by
+  [@jmlopez-rod](https://github.com/jmlopez-rod) in
+  [#3](https://github.com/hotdog-werx/toolbelt/pull/3)
 
-View [unreleased changes][unreleased] since the last release.
+[0.0.3]: https://github.com/hotdog-werx/toolbelt/tree/0.0.3
+[unreleased]: https://github.com/hotdog-werx/toolbelt/compare/0.1.0...HEAD
